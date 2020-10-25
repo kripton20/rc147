@@ -203,7 +203,7 @@ class rm_duplicate_messages extends rcube_plugin
 		*
 		* Комманда выполняется после функции - send()
 		*/
-		$this->rc->output->command('plugin.somecallback1');
+		$this->rc->output->command('plugin.successful');
 		/**
 		* Эта функция реализует шаблон проектирования singleton
 		*
@@ -357,21 +357,6 @@ class rm_duplicate_messages extends rcube_plugin
 			$id_msg1++;
 			$id_msg2 = $id_msg1 + 1;
 		}
-		// функция включения командной кнопки
-		// конец программы
-		//echo"Закончили";
-		/**
-		* Вызов команды display_message
-		* 	show_message(string $message, string $type = 'notice', array $vars = null, boolean $override = true, int $timeout)
-		*
-		* Аргументы
-		* @param $message string Сообщение для отображения
-		* @param $type string Тип сообщения [notice|confirm|confirmation|error] (уведомление, подтвердить, подтверждение, ошибка)
-		* @param $vars array Пары "ключ-значение" должны быть заменены в локализованном тексте
-		* @param $override boolean Отменить последнее установленное сообщение
-		* @param $timeout int Время отображения сообщения в секундах
-		*/
-		//$this->rc->output->show_message($this->gettext('successful'), 'confirmation', $vars = NULL, $override = TRUE);
 		// функция отправки вывода клиенту, и работа PHP - скрипта заканчивается
 		$this->rc->output->send();
 	}
