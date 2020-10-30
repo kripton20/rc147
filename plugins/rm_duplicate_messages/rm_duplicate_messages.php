@@ -178,20 +178,22 @@ class rm_duplicate_messages extends rcube_plugin
 			*/
 			// получаем заголовки сообщения
 			$msg1     = $storage->get_message($msg1_uid, $folder);
-			//$raw_message = $rcube->storage->get_raw_body($msg1_uid);
-			//$raw_headers = $rcube->storage->get_raw_headers($msg1_uid);
-			//$rcmail = rcmail::get_instance();
-			//$date = $lst_msg[$msg1_id]->internaldate;
-			//$storage1 = $rcmail->storage;
-			//$storage = $rcmail->get_storage();
-			//$a1 = $rcmail->storage->save_message($folder, $msg1, '', false, array(), $date);
-			//$a2 = $storage->save_message($folder, $msg1, '', false, array(), $date);
-			//$rcube = rcube::get_instance();
-			//$storage = $rcube->storage;
-			//$saved = $storage->save_message($dst_mbox, $orig_message_raw);
-
-			//$this->write_log_file($msg1);
-			//
+			/**
+						* Снять флаг сообщения для одного или нескольких сообщений
+						*
+						* @param mixed $uids 	UID сообщений в виде массива или строки, разделенной запятыми, или '*'
+						* @param string $flag 	Флаг, который нужно снять: SEEN, DELETED, RECENT, ANSWERED, DRAFT, MDNSENT
+						* @param string $folder Имя папки
+						*
+						* @return bool Статус операции
+						* @ см. set_flag
+						*/
+						$storage->unset_flag($msg1_uid, 'ANSWERED', $folder, true);
+						$storage->unset_flag($msg1_uid, 'FLAGGED', $folder, true);
+						$storage->unset_flag($msg1_uid, 'FORWARDED', $folder, true);
+						$storage->unset_flag($msg1_uid, 'DELETED', $folder, true);
+						$storage->unset_flag($msg1_uid, 'DUBLIKAT', $folder, true);
+						$a=1;
 			/**
 			* Получаем тело определенного сообщения с сервера
 			*
@@ -221,19 +223,36 @@ class rm_duplicate_messages extends rcube_plugin
 			// Второй цикл (для второго сообщения) начинаем с - единицы.
 			for ($msg2_id; $msg2_id < count($lst_msg);) {
 				// читаем заголовки первого сообщения в массиве $lst_msg
-				$uid_msg2 = $lst_msg[$msg2_id]->uid;
+				$msg2_uid = $lst_msg[$msg2_id]->uid;
 				// Разбираем второе сообщение. Начало
 				// получаем заголовки сообщения
-				$msg2     = $storage->get_message($uid_msg2, $folder);
+				$msg2     = $storage->get_message($msg2_uid, $folder);
+				/**
+						* Снять флаг сообщения для одного или нескольких сообщений
+						*
+						* @param mixed $uids 	UID сообщений в виде массива или строки, разделенной запятыми, или '*'
+						* @param string $flag 	Флаг, который нужно снять: SEEN, DELETED, RECENT, ANSWERED, DRAFT, MDNSENT
+						* @param string $folder Имя папки
+						*
+						* @return bool Статус операции
+						* @ см. set_flag
+						*/
+						$storage->unset_flag($msg2_uid, 'ANSWERED', $folder, true);
+						$storage->unset_flag($msg2_uid, 'FLAGGED', $folder, true);
+						$storage->unset_flag($msg2_uid, 'FORWARDED', $folder, true);
+						$storage->unset_flag($msg2_uid, 'DELETED', $folder, true);
+						$storage->unset_flag($msg2_uid, 'DUBLIKAT', $folder, true);
+						$a=1;
+						
 				$msg2_date= $msg2->date;
 				//$this->write_log_file($msg2);
 				// в цикле разберём части сообщения и записываем в массив $msg2_parts каждую часть в свой ключ $part,
 				// если частей нет - PHP выдаёт предупреждение 'Invalid argument supplied for foreach()' - нет переменной $value
 				foreach ($msg2->structure->parts as $part => $value) {
-					$msg2_parts[$part] = $storage->get_message_part($uid_msg2, $part, null, null, null, false);
+					$msg2_parts[$part] = $storage->get_message_part($msg2_uid, $part, null, null, null, false);
 				}
 				//				for ($part = 0; $part < count($msg2->structure->parts); $part++) {
-				//					$msg2_parts[$part] = $storage->get_message_part($uid_msg2, $part, null, null, null, false);
+				//					$msg2_parts[$part] = $storage->get_message_part($msg2_uid, $part, null, null, null, false);
 				//				}
 				// удалим переменную $part
 				unset($part, $value);
@@ -260,9 +279,9 @@ class rm_duplicate_messages extends rcube_plugin
 					if ($msg1->flags == $msg2->flags) {
 						// если Флаги сообщения одинаковые - выделяем дублирующееся сообщение в списке
 						// установим флаг 'DELETED' в сообщение
-//						$msg2_flags = array(
-//							'DELETED' => 'TRUE','DUBLIKAT'=> 'TRUE',
-//							'FLAGGED' => 'TRUE','DUBLIKAT'=> 'TRUE');
+						//						$msg2_flags = array(
+						//							'DELETED' => 'TRUE','DUBLIKAT'=> 'TRUE',
+						//							'FLAGGED' => 'TRUE','DUBLIKAT'=> 'TRUE');
 						//$msg2->flags = array('DELETED' => 'TRUE','DUBLIKAT'=> 'TRUE');
 						//$msg2->flags = array('FLAGGED' => 'TRUE','DUBLIKAT'=> 'TRUE');
 						//$storage->set_flag($msg2_id, 'DELETED', $folder);
@@ -276,7 +295,7 @@ class rm_duplicate_messages extends rcube_plugin
 						*
 						* @return string	Строка заголовков сообщений
 						*/
-						//$msg2_raw_headers = $storage->get_raw_headers($uid_msg2);
+						//$msg2_raw_headers = $storage->get_raw_headers($msg2_uid);
 						/**
 						* Возвращает весь источник сообщения в виде строки (или сохраняет в файл).
 						*
@@ -287,10 +306,21 @@ class rm_duplicate_messages extends rcube_plugin
 						*
 						* @return string	Строка источника сообщения
 						*/
-						//$msg2_raw_body    = $storage->get_raw_body($uid_msg2);
+						//$msg2_raw_body = $storage->get_raw_body($msg2_uid);
+
+						/**
+						* Установить флаг сообщения для одного или нескольких сообщений
+						*
+						* @param mixed $uids			UID сообщений в виде массива или строки, разделенной запятыми, или '*'
+						* @param string $flag			Флаг для установки: SEEN, UNDELETED, DELETED, RECENT, ANSWERED, DRAFT, MDNSENT
+						* @param string $folder		Имя папки
+						* @param boolean $skip_cache	Истина, чтобы пропустить очистку кеша сообщений
+						*
+						* @return boolean Статус операции
+						*/
+						//$storage->set_flag($msg2_uid, 'DUBLIKAT', $folder, true);
+						//$storage->set_flag($msg2_uid, 'DELETED', $folder, true);
 						
-						$storage->set_flag($msg2_uid, 'SEEN', $folder, true);
-						$a=1;
 						/**
 						* Добавить почтовое сообщение (источник) в определенную папку.
 						*
@@ -306,9 +336,9 @@ class rm_duplicate_messages extends rcube_plugin
 						* @return int|bool	Добавленный UID сообщения или True в случае успеха, False в случае ошибки
 						*/
 						// сохраняем сообщение
-						//$msg2_result = $storage->save_message($folder, &$msg2_raw_body, $msg2_raw_headers, false, $msg2_flags, $msg2_date);
+						//$msg2_result = $storage->save_message($folder, & $msg2_raw_body, $msg2_raw_headers, false, $msg2_flags, $msg2_date);
 						//$msg2_result = $storage->save_message($folder, $msg2_raw_body, $msg2_raw_headers, false, $msg2_flags, $msg2_date);
-						
+
 					}
 					// если у второго сообщения установлен флаг:
 					// 'ANSWERED', 'FLAGGED' или 'FORWARDED' то удаляем первое сообщение
@@ -317,28 +347,30 @@ class rm_duplicate_messages extends rcube_plugin
 						|| isset($msg2->flags['FORWARDED'])) {
 						//echo "Флаги сообщения разные: - установлен флаг 'ANSWERED', 'FLAGGED' или 'FORWARDED'";
 						// выделяем дублирующееся сообщение в списке
-//						$msg1_flags = array(
-//							'DELETED' => 'TRUE','DUBLIKAT'=> 'TRUE',
-//							'FLAGGED' => 'TRUE','DUBLIKAT'=> 'TRUE');
+						//						$msg1_flags = array(
+						//							'DELETED' => 'TRUE','DUBLIKAT'=> 'TRUE',
+						//							'FLAGGED' => 'TRUE','DUBLIKAT'=> 'TRUE');
 						//$msg1->flags = array('DELETED' => 'TRUE','DUBLIKAT'=> 'TRUE');
 						//$msg1->flags = array('FLAGGED' => 'TRUE','DUBLIKAT'=> 'TRUE');
 						//$storage->set_flag($msg1_id, 'DELETED', $folder);
 						//$storage->set_flag($msg1_id, 'FLAGGED', $folder);
 						// получаем заголовки и сообщение
-						//$msg1_raw_headers = $storage->get_raw_headers($uid_msg1);
-						//$msg1_raw_body    = $storage->get_raw_body($uid_msg1);
+						//$msg1_raw_headers = $storage->get_raw_headers($msg1_uid);
+						//$msg1_raw_body = $storage->get_raw_body($msg1_uid);
 						// сохраняем сообщение
 						//$msg1_result = $storage->save_message($folder, & $msg1_raw_body, $msg1_raw_headers, false, $msg1_flags, $msg1_date);
 						//$msg2_result = $storage->save_message();
-						$storage->set_flag($msg1_uid, 'FLAGGED', $folder, true);
-						$a=1;
+						//$storage->set_flag($msg2_uid, 'DUBLIKAT', $folder, true);
+						//$storage->set_flag($msg2_uid, 'DELETED', $folder, true);
+						//$storage->set_flag($msg2_uid, '', $folder, true);
+						
 					}
 				}
 				else {
 					// если сообщения не одинаковые - ничего не делаем
 				}
 				// очищаем массивы и переменные второго сообщения, функция unset()
-				unset($msg2, $msg2_parts, $uid_msg2);
+				unset($msg2, $msg2_parts, $msg2_uid);
 				// увеличим счётчик второго сообщения
 				$msg2_id++;
 			}
