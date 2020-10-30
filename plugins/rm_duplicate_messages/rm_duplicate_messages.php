@@ -10,200 +10,94 @@ class rm_duplicate_messages extends rcube_plugin
 	*/
 	function init ()
 	{
-		//Переменная $this относится к текущему классу и представляет собой неявный объект.
+		/**
+		* Это реализует шаблон проектирования singleton.
+		*
+		* @param integer $mode Игнорируемый аргумент rcube :: get_instance ()
+		* @param string  $env  Имя среды для запуска (например, live, dev, test)
+		*
+		* @return rcmail Единственный и неповторимый экземпляр
+		*/
+		// переменная $this относится к текущему классу и представляет собой неявный объект.
 		// rc - свойство этого объекта. Запишем туда системные настройки приложения.
 		$this->rc = rcmail::get_instance();
 		// переменной $tsk присвоим имя текущей задачи приложения
-		$tsk = $this->rc->task;
-		// в условии проверяем имя текущей задачи приложения, если 'mail'
-		if ($tsk == 'mail') {
+		//$tsk = $this->rc->task;
+		// если задача 'mail' и действие '' или 'list', покажем нашу кнопку на панели, в других случаях не показываем
+		if ($this->rc->task == 'mail' && ($this->rc->action == '' || $this->rc->action == 'list')) {
 			/**
-			* *** Регистрация хуков ***
-			* Получаем заголовки и содержимое письма (но только при открытии письма)
-			* Глобальный хук: message_headers_output
-			* Срабатывает при построении таблицы заголовков сообщений для отображения.
-			* Если вы хотите добавить больше заголовков, вам нужно получить их с помощью хука storage_init.
+			* Загрузка локализованных текстов из каталога обрабатываемого плагина.
+			*
+			* @param string $dir        Каталог для поиска
+			* @param mixed  $add2client Сделать тексты доступными на клиенте (массив со списком или true для всех)
 			*/
-			//$this->add_hook('message_headers_output', array ($this,'headers'));
-			/**
-			* Получаем только заголовки писем
-			* Глобальный хук: messages_list
-			* Срабатывает перед отправкой списка сообщений.
-			* Вы можете использовать его для установки заголовков сообщений, list_cols/list_flags и
-			* других переменных rcube_mail_header. Также ис-пользуйте его для передачи дополнительных флагов,
-			* связанных с плагином, в пользователь-ский интерфейс с помощью массива extra_flags.
-			*/
-			/**
-			* Получаем только заголовки писем
-			* Глобальный хук: messages_list
-			* Срабатывает перед отправкой списка сообщений.
-			* Вы можете использовать его для установки заголовков сообщений, list_cols/list_flags и
-			* других переменных rcube_mail_header. Также ис-пользуйте его для передачи дополнительных флагов,
-			* связанных с плагином, в пользователь-ский интерфейс с помощью массива extra_flags.
-			*/
-			/**
-			* Получаем заголовки и содержимое письма (но только при открытии письма)
-			* Глобальный хук: message_headers_output
-			* Срабатывает при построении таблицы заголовков сообщений для отображения.
-			* Если вы хотите добавить больше заголовков, вам нужно получить их с помощью хука storage_init.
-			*/
-			//$this->add_hook('message_headers_output', array($this,'my_message_headers_output1'));
-			/**
-			* Получаем только заголовки писем
-			* Глобальный хук: messages_list
-			* Срабатывает перед отправкой списка сообщений.
-			* Вы можете использовать его для установки заголовков сообщений, list_cols/list_flags и
-			* других переменных rcube_mail_header. Также ис-пользуйте его для передачи дополнительных флагов,
-			* связанных с плагином, в пользователь-ский интерфейс с помощью массива extra_flags.
-			*/
-			//$this->add_hook('messages_list', array($this,'messages_list'));
-			/**
-			* Загружаем сообщение
-			* */
-			//$this->add_hook('message_read', array($this,'message_read'));
-			// Вызываем функцию локализации - add_texts() из родительского класса интерфейса плагинов - rcube_plugin
-			// Файл локализации добавляется в общий массив $texts
-			// В массиве находятся ярлыки добавляемые клиенту
+			// вызываем функцию локализации - add_texts() из родительского класса интерфейса плагинов - rcube_plugin
+			// Файл локализации добавляется в общий массив $texts, в массиве находятся ярлыки добавляемые клиенту
 			// localization - это имя папки, в массиве указываем ключи из массива файла локализации
-			// метод add_texts() записываетфайл локализации нашего плагина в общий массив локализации
+			// метод add_texts() записывает файл локализации нашего плагина в общий массив локализации
 			$this->add_texts('localization', array('label1','label2','checkdpl','successful'));
-			// загружаем файл скина плагина
+			// Функция интеграции скина нашего плагина, в общий скин системы. Загружаем файл скина плагина
 			$this->includeCSS();
 			/**
-			* Клиентские скрипты и элементы пользовательского интерфейса
+			* Клиентские скрипты и элементы пользовательского интерфейса.
 			* Конечно, плагины имеют большее отношение, чем просто отслеживание событий на стороне сервера.
 			* API плагина также позволяет расширить пользовательский интерфейс и функциональность клиента.
 			* Первый шаг – добавить код JavaScript на определенную страницу/действие.
-			* Создайте файл сценария в папке вашего плагина, а затем включите его в init() метод вашего класса плагина с помощью
+			* Сделаем этот файл javascript доступным для клиента
+			* Создадим файл сценария в папке вашего плагина, а затем включите его в init() метод вашего класса плагина с помощью
 			* $this->include_script('client.js');
+			*
+			* @param string $fn путь к файлу; абсолютный или относительный к каталогу плагина
 			*/
-			// добавим код JavaScript на определенную страницу / действие
-			// создайте файл сценария в папке вашего плагина, а затем включите его в init() метод вашего класса плагина с помощью
+			// добавим код JavaScript на определенную страницу / действие, создадим файл сценария в папке вашего плагина,
+			// а затем включим его в init() метод вашего класса плагина с помощью $this->include_script()
 			$this->include_script('rm_duplicate_messages.js');
-			// добавим кнопку в определенный контейнер на страницу
-			// параметр: array  $param      Хеш - массив с именованными параметрами (используемый в скинах)
-			// параметр: string $container  Имя контейнера, куда нужно добавить кнопки
-			// первая кнопка
+			/**
+			* Добавим кнопку в определенный контейнер на страницу (в панель управления на верху, toolbar)
+			*
+			* @param array  $param      Хеш-массив с именованными параметрами (используемый в скинах)
+			* @param string $container  Имя контейнера, куда нужно добавить кнопки
+			*/
+			// добавим командную кнопку на страницу в контейнер toolbar
 			$this->add_button(
 				array(
 					'domain'  => $this->ID,// id = "rcmbtn106"
 					'type'=> 'link',// тип кнопки
-					'label'=> 'label6',// надпись на кнопке
-					'title'=> 'label7',// всплывающая подсказка
-					'command'=> 'plugin.button_comand',// комманда onclick
-					//'onclick'  => "rcmail.command('menu - open', 'enigmamenu', event.target, event)",
-					'width'=> 32,// размеры
-					'height'=> 32,
-					'class'   => 'button clean',// класс стиля class = "button clean"
-					'classact'=> 'button clean',
+					'label'=> 'label6',// локализованная надпись на кнопке
+					'title'=> 'label7',// локализованная всплывающая подсказка
+					'command'=> 'plugin.btn_cmd_rm_dublecates',// имя выполняемой команды для кнопки
+					'width'=> 32,// ширина
+					'height'=> 32,// высота
+					'class'=> 'button btn_cmd',// класс стиля командной кнопки
+					'classact'=> 'button btn_cmd',// класс стиля командной кнопки в нажатом, активном состоянии
 				),
-				'toolbar'); // в панель управления на верху (toolbar)
+				'toolbar'); // панель управления - на верху (toolbar)
 			/**
-			* Регистрация настраиваемых действий
-			* Теперь нужно объединить клиентскую функциональность плагина с действиями на стороне сервера.
-			* Клиентский сценарий может отправлять на сервер ajax-запросы GET или POST, используя:
-			*     rcmail.http_get('plugin.plugin_name', ...)
-			* и   rcmail.http_post('plugin.plugin_name', ...).
-			* Чтобы направить эти запросы к нужной функции плагина, в init() методе класса плагина регистрируем настраиваемое действие
-			* (например, 'plugin.plugin_name'):
-			*     $this->register_action('plugin.plugin_name', array($this, 'my_function'));
-			* Теперь HTTP-запросы формы ./?task=mail&_action=plugin.plugin_name будут запускать зарегистрированную функцию обратного вызова.
-			* Эта функция отвечает за обработку запроса и отправку действительного ответа обратно клиенту.
-			* Вызов
-			*     rcmail::get_instance()->output->send('plugin_name')
-			* функция выполнит свою работу.
-			* Пользовательские действия предназначены не только для обслуживания ajax-запросов, но также могут расширять приложение
-			* с помощью пользовательских экранов и шагов.
-			*
-			* Обработчик для запроса ajax.
-			* Зарегистрируем обработчик для определенного действия (запроса) клиента
+			* Зарегистрируем обработчик для определенного действия ajax (запроса) от клиента.
 			* Обратный вызов будет выполнен по запросу типа /?_task=mail&_action=plugin.action
 			* @param string $action   Имя действия (_task = mail& _action = plugin.action) (должно быть уникальным)
 			* @param mixed  $callback Callback-Функция обратного вызова в виде строки со ссылкой на объект и именем метода:
 			* 						  строка с именем глобальной функции (или массивом) обратного вызова ($obj, 'methodname')
+			* 						  или массив со ссылкой на объект и именем метода
+			* @param mixed  $callback Функция обратного вызова в виде строки или массив со ссылкой на объект и именем метода
 			* @param string $owner    Имя плагина, регистрирующего это действие
 			* @param string $task     Имя задачи, зарегистрированное этим плагином
 			* Пример: $this->register_action('$action', $callback'));
 			*         $this->register_action('$action',  array($this,'function'));
 			*/
-			//$this->register_action('plugin.activ_folders', array($this,'activ_folders'));
-			//$this->register_action('plugin.my_function', array($this,'my_function'));
-			$this->register_action('plugin.functions_start', array($this,'functions_start'));
+			$this->register_action('plugin.rm_dublecates', array($this,'rm_dublecates'));
 		}
-		// в условии проверяем имя текущей задачи приложения, если 'settings'
-		if ($tsk == 'settings') {
-			// загружаем файл скина плагина
-			//$this->includeCSS();
-			/**
-			* Регистрируем хуки сервера
-			* Способ работы хуков плагинов заключается в том, что в разное время, пока Roundcube обрабатывает, он проверяет,
-			* есть-ли у каких-либо плагинов зарегистрированные функции для запуска в это время, и если да, то функции запускаются
-			* (путем выполнения «ловушки»). Эти функции могут изменять или расширять поведение Roundcube по умолчанию.
-			* Регистрация хуков:     $this->add_hook('hook_name', $callback_function);
-			*   где первый аргумент – это имя раздела куда мы хотим поместить наш хук, хуки содержатся здесь: $this->handlers
-			*   где второй аргумент – это обратный вызов PHP (функция в этом файле ниже), который может ссылаться на простую функцию или метод
-			* объекта. Зарегистрированная функция получает один хеш-массив в качестве аргумента, который содержит определенные данные текущего
-			* контекста в зависимости от ловушки.
-			* См. «Перехватчики подключаемых модулей» для получения полного описания всех перехватчиков и их полей аргументов.
-			* Аргумент var может быть изменен функцией обратного вызова и может (даже частично) быть возвращен приложению.
-			*/
-			// Поместим наш хук в секцию preferences_sections_list
-			// Позволяет плагину изменять список разделов пользовательских настроек
-			// потом поместим наш хук ещё в другую секцию https://github.com / roundcube / roundcubemail / wiki / Plugin - Hooks
-			// хуки помещаются в массив $this->$api->$handlers
-			### Эти два хука добавляют плагин в секцию.
-			//$this->add_hook('preferences_sections_list', array($this,'insert_my_section1'));
-			//$this->add_hook('write_log', array($this,'functions_start'));
-			//$this->add_hook('preferences_save', array($this,'my_save_settings'));
-			// получаем список папок почтового ящика
-			//$this->add_hook('render_mailboxlist', array($this,'my_render_mailboxlist1'));
-			//$a = 1; // для остановки
-			// добавим код JavaScript на определенную страницу / действие
-			// создайте файл сценария в папке вашего плагина, а затем включите его в init() метод вашего класса плагина с помощью
-			//$this->include_script('rm_duplicate_messages.js');
-			// добавим кнопку в определенный контейнер на страницу
-			// параметр: array  $param      Хеш - массив с именованными параметрами (используемый в скинах)
-			// параметр: string $container  Имя контейнера, куда нужно добавить кнопки
-			/*$this->add_button(
-			array(
-			'type'    => 'link',// тип кнопки
-			'label'=> 'buttontext',// Очистить
-			'command'=> 'plugin.rm_duplicate_messages',// комманда onclick = "return rcmail.command('plugin.rm_duplicate_messages','',this,event)"
-			'class'=> 'button clean',// класс стиля class = "button clean"
-			'classact'=> 'button clean',
-			'width'   => 32,// размеры
-			'height'=> 32,
-			'title'   => 'label1',// title = "Удалить старые сообщения"
-			'domain'=> $this->ID,// id = "rcmbtn106"
-			),
-			// в панель управления на верху (toolbar)
-			'toolbar');*/
-			/**
-			* Обработчик для запроса ajax.
-			* Зарегистрируем обработчик для определенного действия по запросу клиента.
-			* Обратный вызов будет выполнен по запросу типа /?_task=mail&_action=plugin.myaction
-			* Параметр: string $action    Имя действия (должно быть уникальным)
-			* Параметр: mixed  $callback Callback-Функция: строка с именем глобальной функции обратного вызова или массивом
-			* в виде строки или массива со ссылкой на объект и именем метода ($obj, 'methodname')
-			*/
-			//$this->register_action('plugin.delallold', array($this,'clean_messages'));
+		// когда наша функция запускается страница обновляется функцию обратного вызова требуется зарегистрировать еще раз
+		elseif ($this->rc->action == 'plugin.rm_dublecates') {
+			$this->register_action('plugin.rm_dublecates', array($this,'rm_dublecates'));
 		}
+		// в условии проверяем имя текущей задачи приложения, если 'settings' - делаем меню настроек нашего плагина
+		//if ($tsk == 'settings') {}
 	}
 
 	// основная вункция командной кнопки запускает все необходимые функции
-	function functions_start()
+	function rm_dublecates()
 	{
-		// добавим локализованную метку в клиентскую среду
-		$this->rc->output->add_label('plugin.checkdpl', 'plugin.successful');
-		/**
-		* Вызов клиентского метода
-		*
-		* @param string	Метод для вызова
-		* @param ...	Дополнительные аргументы
-		*
-		* Комманда выполняется после функции - send()
-		*/
-		$this->rc->output->command('plugin.successful');
 		/**
 		* Эта функция реализует шаблон проектирования singleton
 		*
@@ -212,30 +106,35 @@ class rm_duplicate_messages extends rcube_plugin
 		*
 		* @return rcube Единственный экземпляр
 		*/
-		$this->rc = rcmail::get_instance();
+		//$this->rc = rcmail::get_instance();
+		//$rcube = rcube::get_instance();
+		//$storage = $rcube->get_storage(); // = $rcube->get_storage();
+		//$storage = $rcube->get_storage;
+		//$storageth = $this->rc->get_storage();
+		//$rcmail = rcmail::get_instance();
 		/**
 		* Инициализировать и получить объект хранения
+		*
 		* 	get_storage()
 		*
 		* @return rcube_storage Storage Объект хранения
 		*/
 		$storage = $this->rc->get_storage();
 
-		// переменные $id_msg1 и $id_msg2 номера первого и второго сообщения в массиве $lst_msg
-		$id_msg1 = 0;
-		$id_msg2 = 1;
 		/**
 		* Возвращает имя текущей папки
+		*
 		* 	get_folder (): string
 		*
-		* @return string	Имя папки
+		* @return string Имя папки
 		*/
 		$folder  = $storage->get_folder();
+
 		/**
 		* Открытый метод для вывода заголовков сообщений.
 		* 	list_messages(string $folder = null, int $page = null, string $sort_field = null, string $sort_order = null, int $slice) : array
 		*
-		* Аргументы
+
 		* @param string $folder		Имя папки
 		* @param int $page			Текущая страница в списке
 		* @param string $sort_field	Поле заголовка для сортировки
@@ -245,9 +144,13 @@ class rm_duplicate_messages extends rcube_plugin
 		* @return array	Индексированный массив с объектами заголовка сообщения
 		*/
 		$lst_msg = $storage->list_messages($folder, null, null, 'ASC', null);
+		//		$lst_msg1 = $storage->folder_data($folder);
+		//		$lst_msg1 = $storage->index($folder, $sort_field = null, $sort_order = null);
 
 		//$this->write_log_file($lst_msg);
-		//
+		// переменные $msg1_id и $msg2_id номера первого и второго сообщения в массиве $lst_msg
+		$msg1_id = 0;
+		$msg2_id = 1;
 		/**
 		* В цикле перебираем массив $lst_msg и получаем uid каждого сообщения, присвоим это значение переменной $uid
 		* Обход индексного массива организуем при помощи цикла for (для ассоциативных массивов предназначен специализированный оператор foreach)
@@ -255,31 +158,46 @@ class rm_duplicate_messages extends rcube_plugin
 		* которая принимает в качестве параметра массив и возвращает количество элементов в нем.
 		* Первый цикл (для первого сообщения) начинаем с - нуля.
 		*/
-		for ($id_msg1; $id_msg1 < count($lst_msg);) {
-			// выводим сообщение
+		foreach ($lst_msg as $msg1_header) {
+			//for ($msg1_id; $msg1_id < count($lst_msg);) {
 			// читаем заголовки первого сообщения в массиве $lst_msg
-			$uid_msg1 = $lst_msg[$id_msg1]->uid;
+			//$msg1_uid = $lst_msg[$msg1_id]->uid;
+			$msg1_uid = $msg1_header->uid;
 			/// Разбираем первое сообщение. Начало
 			/**
 			* Получение заголовков сообщений и структуры тела с сервера и построение структуры объекта,
-			* подобной той, которая создается PEAR::Mail_mimeDecode.
+			* подобной той, которая создается PEAR::Mail_mimeDecode
+			*
 			* 	get_message (int $uid, string $folder = null): object
 			*
-			* Аргументы
-			* @param $uid int		UID сообщения для получения
-			* @param $folder string	Папка для чтения
+
+			* @param int $uid		UID сообщения для получения
+			* @param string	$folder Папка для чтения
 			*
 			* @return object rcube_message_header Данные сообщения
 			*/
 			// получаем заголовки сообщения
-			$msg1     = $storage->get_message($uid_msg1, $folder);
+			$msg1     = $storage->get_message($msg1_uid, $folder);
+			//$raw_message = $rcube->storage->get_raw_body($msg1_uid);
+			//$raw_headers = $rcube->storage->get_raw_headers($msg1_uid);
+			//$rcmail = rcmail::get_instance();
+			//$date = $lst_msg[$msg1_id]->internaldate;
+			//$storage1 = $rcmail->storage;
+			//$storage = $rcmail->get_storage();
+			//$a1 = $rcmail->storage->save_message($folder, $msg1, '', false, array(), $date);
+			//$a2 = $storage->save_message($folder, $msg1, '', false, array(), $date);
+			//$rcube = rcube::get_instance();
+			//$storage = $rcube->storage;
+			//$saved = $storage->save_message($dst_mbox, $orig_message_raw);
+
 			//$this->write_log_file($msg1);
 			//
 			/**
 			* Получаем тело определенного сообщения с сервера
+			*
 			* 	get_message_part(int $uid, string $part   = 1, \rcube_message_part $o_part = null, mixed $print = null, resource $fp = null, boolean $skip_charset_conv = false) : string
 			*
-			* Аргументы
+
 			* @param int $uid					UID сообщения
 			* @param string $part				Номер части
 			* @param rcube_message_part $o_part	Объект детали, созданный get_structure()
@@ -289,47 +207,108 @@ class rm_duplicate_messages extends rcube_plugin
 			*
 			* @return string	Сообщение / тело части, если не напечатано
 			*/
-
-			// в цикле разберём части сообщения и записываем в массив $msg_parts каждую часть в свой ключ $part
-			for ($part = 0; $part < count($msg1->structure->parts); $part++) {
-				$msg1_parts[$part] = $storage->get_message_part($uid_msg1, $part, null, null, null, false);
+			// в цикле разберём части сообщения и записываем в массив $msg1_parts каждую часть в свой ключ $part,
+			// если частей нет - PHP выдаёт предупреждение 'Invalid argument supplied for foreach()' - нет переменной $value
+			foreach ($msg1->structure->parts as $part => $value) {
+				$msg1_parts[$part] = $storage->get_message_part($msg1_uid, $part, null, null, null, false);
 			}
+			//			for ($part = 0; $part < count($msg1->structure->parts); $part++) {
+			//				$msg1_parts3[$part] = $storage->get_message_part($msg1_uid, $part, null, null, null, false);
+			//			}
 			// удалим переменную $part
-			unset($part);
+			unset($part, $value);
 			/// Разбираем первое сообщение. Конец
 			// Второй цикл (для второго сообщения) начинаем с - единицы.
-			for ($id_msg2; $id_msg2 < count($lst_msg);) {
+			for ($msg2_id; $msg2_id < count($lst_msg);) {
 				// читаем заголовки первого сообщения в массиве $lst_msg
-				$uid_msg2 = $lst_msg[$id_msg2]->uid;
+				$uid_msg2 = $lst_msg[$msg2_id]->uid;
 				// Разбираем второе сообщение. Начало
 				// получаем заголовки сообщения
 				$msg2     = $storage->get_message($uid_msg2, $folder);
+				$msg2_date= $msg2->date;
 				//$this->write_log_file($msg2);
-				//
-				// в цикле разберём части сообщения и записываем в массив $msg_parts каждую часть в свой ключ $part
-				for ($part = 0; $part < count($msg2->structure->parts); $part++) {
+				// в цикле разберём части сообщения и записываем в массив $msg2_parts каждую часть в свой ключ $part,
+				// если частей нет - PHP выдаёт предупреждение 'Invalid argument supplied for foreach()' - нет переменной $value
+				foreach ($msg2->structure->parts as $part => $value) {
 					$msg2_parts[$part] = $storage->get_message_part($uid_msg2, $part, null, null, null, false);
 				}
+				//				for ($part = 0; $part < count($msg2->structure->parts); $part++) {
+				//					$msg2_parts[$part] = $storage->get_message_part($uid_msg2, $part, null, null, null, false);
+				//				}
 				// удалим переменную $part
-				unset($part);
+				unset($part, $value);
 				/// Разбираем второе сообщение. Конец
-				// условие сверки сообщений (неиспользуемые && $msg1_internaldate == $msg2_internaldate)
-				if ($lst_msg[$id_msg1]->subject == $lst_msg[$id_msg2]->subject
-					&& $lst_msg[$id_msg1]->from == $lst_msg[$id_msg2]->from
-					&& $lst_msg[$id_msg1]->to == $lst_msg[$id_msg2]->to
-					&& $lst_msg[$id_msg1]->cc == $lst_msg[$id_msg2]->cc
-					&& $lst_msg[$id_msg1]->replyto == $lst_msg[$id_msg2]->replyto
-					&& $lst_msg[$id_msg1]->date == $lst_msg[$id_msg2]->date
-					&& $lst_msg[$id_msg1]->timestamp == $lst_msg[$id_msg2]->timestamp
+				// условие сверки сообщений (неиспользуемые Заголовок сообщения In - Reply - To in_reply_to)
+				//     Тема сообщения
+				if ($lst_msg[$msg1_id]->subject == $lst_msg[$msg2_id]->subject
+					// Отправитель сообщения (От)
+					&& $lst_msg[$msg1_id]->from == $lst_msg[$msg2_id]->from
+					// Получатель сообщения (Кому)
+					&& $lst_msg[$msg1_id]->to == $lst_msg[$msg2_id]->to
+					// Дополнительные получатели сообщения (Копия)
+					&& $lst_msg[$msg1_id]->cc == $lst_msg[$msg2_id]->cc
+					// Заголовок ответа на сообщение
+					&& $lst_msg[$msg1_id]->replyto == $lst_msg[$msg2_id]->replyto
+					// Дата сообщения (Дата)
+					&& $lst_msg[$msg1_id]->date == $lst_msg[$msg2_id]->date
+					// Отметка времени сообщения (на основе даты сообщения)
+					&& $lst_msg[$msg1_id]->timestamp == $lst_msg[$msg2_id]->timestamp
+					// Внутренняя дата IMAP
+					//&& $lst_msg[$msg1_id]->internaldate == $lst_msg[$msg2_id]->internaldate
 				) {
-					//echo "Сообщения одинаковые";
-					// условие проверки флагов сообщений, если флаги одинаковые - удаляем второе сообщение
+					// проверяем флаги сообщений, если флаги одинаковые - удаляем второе сообщение
 					if ($msg1->flags == $msg2->flags) {
-						//echo "Флаги сообщения одинаковые";
-						// выделяем дублирующееся сообщение в списке
-						$msg2->flags = array('DELETED' => 'TRUE','DUBLIKAT'=> 'TRUE');
-						$msg2->flags = array('FLAGGED' => 'TRUE','DUBLIKAT'=> 'TRUE');
-						//$msg2->save();
+						// если Флаги сообщения одинаковые - выделяем дублирующееся сообщение в списке
+						// установим флаг 'DELETED' в сообщение
+//						$msg2_flags = array(
+//							'DELETED' => 'TRUE','DUBLIKAT'=> 'TRUE',
+//							'FLAGGED' => 'TRUE','DUBLIKAT'=> 'TRUE');
+						//$msg2->flags = array('DELETED' => 'TRUE','DUBLIKAT'=> 'TRUE');
+						//$msg2->flags = array('FLAGGED' => 'TRUE','DUBLIKAT'=> 'TRUE');
+						//$storage->set_flag($msg2_id, 'DELETED', $folder);
+						//$storage->set_flag($msg2_id, 'FLAGGED', $folder);
+						/**
+						* Возвращает заголовки сообщения в виде строки.
+						*
+						* get_raw_headers(int $uid) : string
+						*
+						* @param int $uid 	UID сообщения
+						*
+						* @return string	Строка заголовков сообщений
+						*/
+						//$msg2_raw_headers = $storage->get_raw_headers($uid_msg2);
+						/**
+						* Возвращает весь источник сообщения в виде строки (или сохраняет в файл).
+						*
+						* get_raw_body(int $uid, resource $fp = null) : string
+						*
+						* @param $uid int		UID сообщения
+						* @param $fp resource	Указатель файла для сохранения сообщения
+						*
+						* @return string	Строка источника сообщения
+						*/
+						//$msg2_raw_body    = $storage->get_raw_body($uid_msg2);
+						
+						$storage->set_flag($msg2_uid, 'SEEN', $folder, true);
+						$a=1;
+						/**
+						* Добавить почтовое сообщение (источник) в определенную папку.
+						*
+						* save_message(string $folder, string|array &$message, string $headers = '', boolean $is_file = false, array $flags = array(), mixed $date = null) : int|bool
+						*
+						* @param $folder string			Целевая папка
+						* @param $message string|array	Строка или имя файла источника сообщения или массив (строк и указателей файлов)
+						* @param $headers string		Строка заголовков, если $message содержит только тело
+						* @param $is_file boolean		Истинно, если $message - имя файла
+						* @param $flags array			Флаги сообщений
+						* @param $date mixed			Внутренняя дата сообщения
+						*
+						* @return int|bool	Добавленный UID сообщения или True в случае успеха, False в случае ошибки
+						*/
+						// сохраняем сообщение
+						//$msg2_result = $storage->save_message($folder, &$msg2_raw_body, $msg2_raw_headers, false, $msg2_flags, $msg2_date);
+						//$msg2_result = $storage->save_message($folder, $msg2_raw_body, $msg2_raw_headers, false, $msg2_flags, $msg2_date);
+						
 					}
 					// если у второго сообщения установлен флаг:
 					// 'ANSWERED', 'FLAGGED' или 'FORWARDED' то удаляем первое сообщение
@@ -338,25 +317,48 @@ class rm_duplicate_messages extends rcube_plugin
 						|| isset($msg2->flags['FORWARDED'])) {
 						//echo "Флаги сообщения разные: - установлен флаг 'ANSWERED', 'FLAGGED' или 'FORWARDED'";
 						// выделяем дублирующееся сообщение в списке
-						$msg1->flags = array('DELETED' => 'TRUE','DUBLIKAT'=> 'TRUE');
-						$msg1->flags = array('FLAGGED' => 'TRUE','DUBLIKAT'=> 'TRUE');
-						//$msg1->save();
+//						$msg1_flags = array(
+//							'DELETED' => 'TRUE','DUBLIKAT'=> 'TRUE',
+//							'FLAGGED' => 'TRUE','DUBLIKAT'=> 'TRUE');
+						//$msg1->flags = array('DELETED' => 'TRUE','DUBLIKAT'=> 'TRUE');
+						//$msg1->flags = array('FLAGGED' => 'TRUE','DUBLIKAT'=> 'TRUE');
+						//$storage->set_flag($msg1_id, 'DELETED', $folder);
+						//$storage->set_flag($msg1_id, 'FLAGGED', $folder);
+						// получаем заголовки и сообщение
+						//$msg1_raw_headers = $storage->get_raw_headers($uid_msg1);
+						//$msg1_raw_body    = $storage->get_raw_body($uid_msg1);
+						// сохраняем сообщение
+						//$msg1_result = $storage->save_message($folder, & $msg1_raw_body, $msg1_raw_headers, false, $msg1_flags, $msg1_date);
+						//$msg2_result = $storage->save_message();
+						$storage->set_flag($msg1_uid, 'FLAGGED', $folder, true);
+						$a=1;
 					}
 				}
 				else {
-					//echo "Сообщения не одинаковые";
+					// если сообщения не одинаковые - ничего не делаем
 				}
 				// очищаем массивы и переменные второго сообщения, функция unset()
 				unset($msg2, $msg2_parts, $uid_msg2);
 				// увеличим счётчик второго сообщения
-				$id_msg2++;
+				$msg2_id++;
 			}
 			// очищаем массивы и переменные второго сообщения, функция unset()
-			unset($msg1, $msg1_parts, $uid_msg1);
+			unset($msg1, $msg1_header, $msg1_parts, $msg1_uid);
 			// увеличим счётчики первого и второго сообщения и повторяем весь цикл
-			$id_msg1++;
-			$id_msg2 = $id_msg1 + 1;
+			$msg1_id++;
+			$msg2_id = $msg1_id + 1;
 		}
+		// добавим локализованную метку в клиентскую среду
+		$this->rc->output->add_label('plugin.checkdpl', 'plugin.successful');
+		/**
+		* Вызов клиентского метода
+		*
+		* @param string	Метод для вызова
+		* @param ...	Дополнительные аргументы
+		*
+		* команда выполняется после функции - send()
+		*/
+		$this->rc->output->command('plugin.successful');
 		// функция отправки вывода клиенту, и работа PHP - скрипта заканчивается
 		$this->rc->output->send();
 	}
@@ -448,7 +450,7 @@ class rm_duplicate_messages extends rcube_plugin
 		return $args;
 	}
 
-	// Функция интеграции скина нашего плагина, в общий скин системы.
+	// Функция интеграции скина нашего плагина, в общий скин системы
 	private function includeCSS ()
 	{
 		//Получаем текущий системный скин
