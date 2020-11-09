@@ -261,8 +261,8 @@ class rm_duplicate_messages extends rcube_plugin
 		for ($key1 = 0; $key1 < count($lst_msg); $key1++) {
 
 			// читаем заголовки первого сообщения в массиве $lst_msg
-			$uid1       = $lst_msg[$key1]->uid;
-			
+			$uid1 = $lst_msg[$key1]->uid;
+
 			/**
 			* Получение заголовков сообщений и структуры тела с сервера и построение структуры объекта,
 			* подобной той, которая создается PEAR::Mail_mimeDecode.
@@ -275,9 +275,9 @@ class rm_duplicate_messages extends rcube_plugin
 			* @return object rcube_message_header Данные сообщения
 			*/
 			// получаем сообщение
-			$msg1       = $storage->get_message($uid1, $folder);
+			$msg1 = $storage->get_message($uid1, $folder);
 			$this->write_log_file($msg1);
-			
+
 			//=============================
 			/**
 			* Получаем тело определенного сообщения с сервера
@@ -293,27 +293,27 @@ class rm_duplicate_messages extends rcube_plugin
 			*
 			* @return string	Сообщение / тело части, если не напечатано
 			*/
-			// получаем части сообщения, записываем в массив
-			//$msg1_part = $storage->get_message_part($uid1, 1, null, null, null, false);
-			//$msg1_html = $storage->get_message_part($uid1, 2, null, null, null, false);
-			$msg_part0 = array('msg_part0'=> $storage->get_message_part($uid1, 0, null, null, null, false));
-			$msg_part1 = array('msg_part1'=> $storage->get_message_part($uid1, 1, null, null, null, false));
-			$msg_part2 = array('msg_part2'=> $storage->get_message_part($uid1, 2, null, null, null, false));
-			$msg_part3 = array('msg_part3'=> $storage->get_message_part($uid1, 3, null, null, null, false));
-			$msg_part4 = array('msg_part4'=> $storage->get_message_part($uid1, 4, null, null, null, false));
-			$msg_part5 = array('msg_part5'=> $storage->get_message_part($uid1, 5, null, null, null, false));
-			$this->write_log_file($msg_part0);
-			$this->write_log_file($msg_part1);
-			$this->write_log_file($msg_part2);
-			$this->write_log_file($msg_part3);
-			$this->write_log_file($msg_part4);
-			$this->write_log_file($msg_part5);
-
+			// в цикле разберём части сообщения и записываем в массив $msg_parts каждую часть в свой ключ $part
+			for ($part = 0; $part < count($msg1->structure->parts); $part++) {
+				$msg1_parts[$part] = $storage->get_message_part($uid1, $part, null, null, null, false);
+				
+//				$msg_parts = array (
+//				"structure"=> array (
+//				"parts"=> array (
+//				$part=> array (
+//				"msg_part{$part}"=> $storage->get_message_part($uid1, $part, null, null, null, false)
+//				),
+//				),
+//				),
+//				);
+				//$msg1 = array_merge((array)$msg1, (array)$msg_parts);
+			}
+			
+			//$this->write_log_file($msg_parts);
 			
 			//=============================
-			
 			// объединим массивы в один (объединение происходит с права на лево)
-			$result_msg = array_merge((array)$msg1, (array)$msg1_part, (array)$msg1_html);
+				$result_msg = array_merge((array)$msg1, (array)$msg_parts);
 			$this->write_log_file($result_msg);
 
 			### Части сообщения для сравнения в условии. Начало

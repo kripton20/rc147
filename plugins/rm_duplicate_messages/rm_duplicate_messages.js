@@ -10,45 +10,37 @@ function button_function () {
 	// buttons[rcmail.get_label('cancel')] = function(e) {$(this).remove();};
 	// rcmail.show_popup_dialog(rcmail.get_label('delete_old.dlgtxt'), rcmail.get_label('delete_old.deloldmsgs'), buttons);
 	// window.alert('Привет');
-
 	// Отправим ajax-запрос от клиента
 	// rcmail.http_post('plugin.$action', ...);
 	// следующая строка запускает функцию зарегистрированную вот этой акции:
 	//    $this->register_action('plugin.rm_duplicate_messages', array($this,'my_function'));
 	// plugin.rm_action_delete_message' - имя акции в массиве акций
-
 	// запускаем метод http_post() объекта rcmail
 	/*rcmail.http_post('plugin.activ_folders');
-
 	function activ_folders (){
 	rcmail.http_post('plugin.activ_folders');
 	}
-
 	function my_function(){
 	rcmail.http_post('plugin.my_function');
 	}*/
 	//var a=rcmail.set_busy(true,"loading");
+	// переменной checkdpl - присвоим значение метки rm_duplicate_messages.checkdpl
+	// выведем это значение при сканировании массива писем
+	var checkdpl = rcmail.get_label('rm_duplicate_messages.checkdpl');
+	// запускаем PHP-функцию functions_start
+	// вызываем метод http_post объекта rcmail (параметры через запятую)
 	rcmail.http_post(
-		'plugin.functions_start',
-		//a
-		// выводим уведомление о работе нашей функции - functions_start обработки сообщений
-		//rcmail.display_message('checkdpl','loading')
 		// отключим нашу коммандную кнопку
 		//window.rcmail.enable_command('plugin.button_comand', false);
+		'plugin.functions_start',
+		//window.alert("Контрольная точка"),
+		// выводим уведомление о работе нашей функции - functions_start обработки сообщений
+		//rcmail.display_message('checkdpl','loading')
+		//rcmail.display_message(rcmail.gettext('checkdpl'),'loading')
+		//rcmail.display_message(rcmail.get_label('checkdpl'),'loading')
+		rcmail.display_message(checkdpl,'loading')
 	);
 }
-
-//function some_callback_function (response)
-//{
-//	window.alert("Контрольная точка");
-//	$('#dstus').html(response.message);
-//}
-
-//function enable_command (){
-//	// включим комманду нашей кнопки
-//	window.rcmail.enable_command('plugin.button_comand', true);
-//	window.alert("включим комманду нашей кнопки");
-//}
 
 /**
 * Повторная обработка данных ответа на клиенте:
@@ -123,18 +115,17 @@ if (window.rcmail) {
 			// одна команда - один обработчик
 			rcmail.register_command('plugin.button_comand', button_function, true);
 		});
-	//window.addEventListener('load', function(){window.alert("load");});
-	window.addEventListener('test', function(){window.alert("test");});
-	window.addEventListener('test', function(){window.alert("test window");});
-	document.addEventListener('test', function(){window.alert("test document");});
-	window.rcmail.addEventListener('test', function(){window.alert("test window.rcmail");});
-	rcmail.addEventListener('test', function(e){window.alert("test rcmail");});
+	// функция включения кнопки
 	rcmail.addEventListener('plugin.somecallback1', function some_callback_function1(response1){
-			window.alert("plugin.somecallback1");
+			//window.alert("plugin.somecallback1");
+			//rcmail.display_message(rcmail.getlabel('successful'),'confirmation');
+			rcmail.display_message('successful','confirmation');
+			//rcmail.display_message(rcmail.getlabel('rm_duplicate_messages.successful'),'confirmation');
 		});
-	rcmail.addEventListener('plugin.somecallback2', function some_callback_function2(response2){
-			window.alert("plugin.somecallback2");
-		});
+	//
+	//rcmail.addEventListener('plugin.somecallback2', function some_callback_function2(response2){
+	//		window.alert("plugin.somecallback2");
+	//	});
 
 	//		rcmail.addEventListener('functions_start', function(evt1){
 	//			rcmail.register_command('plugin.somecallback', some_callback_function, true);
