@@ -296,25 +296,20 @@ class rm_duplicate_messages extends rcube_plugin
 			// в цикле разберём части сообщения и записываем в массив $msg_parts каждую часть в свой ключ $part
 			for ($part = 0; $part < count($msg1->structure->parts); $part++) {
 				$msg1_parts[$part] = $storage->get_message_part($uid1, $part, null, null, null, false);
-				
-//				$msg_parts = array (
-//				"structure"=> array (
-//				"parts"=> array (
-//				$part=> array (
-//				"msg_part{$part}"=> $storage->get_message_part($uid1, $part, null, null, null, false)
-//				),
-//				),
-//				),
-//				);
-				//$msg1 = array_merge((array)$msg1, (array)$msg_parts);
+
+				// получаем значение элемента массива
+				//$p = $msg1->structure->parts[$part]->size;
+				//$array[] = "item1"; // for your $arr1
+				//$msg1['msg1_part'] = $storage->get_message_part($uid1, $part, null, null, null, false); // for your $arr2
+				//array_push($msg1, "$array");
+
+				//$msg1->structure->parts[$part] += array(
+				//	'msg1_part'=> $storage->get_message_part($uid1, $part, null, null, null, false)
+				//);
+				//$msg1['structure'] = array('my'=>'qwerty');
+				//$p += $p = array('my'=>'qwerty');
 			}
-			
-			//$this->write_log_file($msg_parts);
-			
-			//=============================
-			// объединим массивы в один (объединение происходит с права на лево)
-				$result_msg = array_merge((array)$msg1, (array)$msg_parts);
-			$this->write_log_file($result_msg);
+
 
 			### Части сообщения для сравнения в условии. Начало
 			$msg1_subject = $lst_msg[$key1]->subject;
