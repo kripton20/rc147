@@ -221,6 +221,7 @@ class rm_duplicate_messages extends rcube_plugin
 		// Переменная i номер первого письма, переменная j номер второго письма.
 		$id_msg1 = 0;
 		$id_msg2 = 1;
+
 		/**
 		* Инициализировать и получить объект хранения
 		* 	get_storage()
@@ -260,11 +261,10 @@ class rm_duplicate_messages extends rcube_plugin
 		* которая принимает в качестве параметра массив и возвращает количество элементов в нем.
 		* Первый цикл (для первого сообщения) начинаем с - нуля.
 		*/
-		$m1 = 0;
-		for ($key1 = $m1; $key1 < count($lst_msg); $key1++) {
+		for ($id_msg1; $id_msg1 < count($lst_msg);) {
 
 			// читаем заголовки первого сообщения в массиве $lst_msg
-			$uid_msg1 = $lst_msg[$key1]->uid;
+			$uid_msg1 = $lst_msg[$id_msg1]->uid;
 
 			### Разбираем первое сообщение. Начало
 			/**
@@ -279,8 +279,8 @@ class rm_duplicate_messages extends rcube_plugin
 			* @return object rcube_message_header Данные сообщения
 			*/
 			// получаем заголовки сообщения
-			$msg1     = $storage->get_message($uid1, $folder);
-			$this->write_log_file($msg1);
+			$msg1     = $storage->get_message($uid_msg1, $folder);
+			//$this->write_log_file($msg1);
 
 			/**
 			* Получаем тело определенного сообщения с сервера
@@ -298,81 +298,90 @@ class rm_duplicate_messages extends rcube_plugin
 			*/
 			// в цикле разберём части сообщения и записываем в массив $msg_parts каждую часть в свой ключ $part
 			for ($part = 0; $part < count($msg1->structure->parts); $part++) {
-				$msg1_parts[$part] = $storage->get_message_part($uid1, $part, null, null, null, false);
+				$msg1_parts[$part] = $storage->get_message_part($uid_msg1, $part, null, null, null, false);
 			}
-
+			// удалим переменную $part
+			unset($part);
 			/// Части сообщения для сравнения в условии. Начало
-			//			$msg1_subject = $lst_msg[$key1]->subject;
-			//			$msg1_from = $lst_msg[$key1]->from;
-			//			$msg1_to = $lst_msg[$key1]->to;
-			//			$msg1_cc = $lst_msg[$key1]->cc;
-			//			$msg1_replyto = $lst_msg[$key1]->replyto;
+			//			$msg1_subject = $lst_msg[$id_msg1]->subject;
+			//			$msg1_from = $lst_msg[$id_msg1]->from;
+			//			$msg1_to = $lst_msg[$id_msg1]->to;
+			//			$msg1_cc = $lst_msg[$id_msg1]->cc;
+			//			$msg1_replyto = $lst_msg[$id_msg1]->replyto;
 			//			// отправка
-			//			$msg1_date = $lst_msg[$key1]->date;
-			//			$msg1_timestamp = $lst_msg[$key1]->timestamp;
+			//			$msg1_date = $lst_msg[$id_msg1]->date;
+			//			$msg1_timestamp = $lst_msg[$id_msg1]->timestamp;
 			//			// прибытие
-			//			//$msg1_internaldate = $lst_msg[$key1]->internaldate;
+			//			//$msg1_internaldate = $lst_msg[$id_msg1]->internaldate;
 			//			// флаги сообщения записываем в массив $msg1_flags
 			//			$msg1_flags = $msg1->flags;
 			//			/// Части сообщения для сравнения в условии. Конец
 			//			### Разбираем первое сообщение. Конец
 
 			// Второй цикл (для второго сообщения) начинаем с - единицы.
-			$m2 = 1;
-			for ($key2 = $m2; $key2 < count($lst_msg); $key2++) {
+			for ($id_msg2; $id_msg2 < count($lst_msg);) {
 
 				// читаем заголовки первого сообщения в массиве $lst_msg
-				$uid_msg2 = $lst_msg[$key2]->uid;
+				$uid_msg2 = $lst_msg[$id_msg2]->uid;
 
 				### Разбираем первое сообщение. Начало
 				// получаем заголовки сообщения
-				$msg2     = $storage->get_message($uid2, $folder);
+				$msg2     = $storage->get_message($uid_msg2, $folder);
 				//$this->write_log_file($msg2);
 
 				// в цикле разберём части сообщения и записываем в массив $msg_parts каждую часть в свой ключ $part
 				for ($part = 0; $part < count($msg2->structure->parts); $part++) {
-					$msg2_parts[$part] = $storage->get_message_part($uid2, $part, null, null, null, false);
+					$msg2_parts[$part] = $storage->get_message_part($uid_msg2, $part, null, null, null, false);
 				}
-
+				// удалим переменную $part
+				unset($part);
 				/// Части сообщения для сравнения в условии. Начало
-				//				$msg2_subject = $lst_msg[$key2]->subject;
-				//				$msg2_from = $lst_msg[$key2]->from;
-				//				$msg2_to = $lst_msg[$key2]->to;
-				//				$msg2_cc = $lst_msg[$key2]->cc;
-				//				$msg2_replyto = $lst_msg[$key2]->replyto;
+				//				$msg2_subject = $lst_msg[$id_msg2]->subject;
+				//				$msg2_from = $lst_msg[$id_msg2]->from;
+				//				$msg2_to = $lst_msg[$id_msg2]->to;
+				//				$msg2_cc = $lst_msg[$id_msg2]->cc;
+				//				$msg2_replyto = $lst_msg[$id_msg2]->replyto;
 				//				// отправка
-				//				$msg2_date = $lst_msg[$key2]->date;
-				//				$msg2_timestamp = $lst_msg[$key2]->timestamp;
+				//				$msg2_date = $lst_msg[$id_msg2]->date;
+				//				$msg2_timestamp = $lst_msg[$id_msg2]->timestamp;
 				//				// прибытие
-				//				//$msg2_internaldate = $lst_msg[$key2]->internaldate;
+				//				//$msg2_internaldate = $lst_msg[$id_msg2]->internaldate;
 				//				// флаги сообщения записываем в массив $msg2_flags
 				//				$msg2_flags = $msg2->flags;
 				/// Части сообщения для сравнения в условии. Конец
 				//### Разбираем первое сообщение. Конец
 
-			}
-			$a = 1;// условие сверки сообщений (неиспользуемые && $msg1_internaldate == $msg2_internaldate)
-			if ($lst_msg[$key1]->subject == $lst_msg[$key2]->subject
-				//&& $lst_msg[$key1]->from == $lst_msg[$key2]->from
-				//&& $lst_msg[$key1]->to == $lst_msg[$key2]->to
-				//&& $lst_msg[$key1]->cc == $lst_msg[$key2]->cc
-				//&& $lst_msg[$key1]->replyto == $lst_msg[$key2]->replyto
-				//&& $lst_msg[$key1]->date == $lst_msg[$key2]->date
-				//&& $lst_msg[$key1]->timestamp == $lst_msg[$key2]->timestamp
-			) {
-				echo "Сообщения одинаковые";
-
-				if ($msg1->flags == $msg2->flags) {
+				// условие сверки сообщений (неиспользуемые && $msg1_internaldate == $msg2_internaldate)
+				if ($lst_msg[$id_msg1]->subject == $lst_msg[$id_msg2]->subject
+					&& $lst_msg[$id_msg1]->from == $lst_msg[$id_msg2]->from
+					&& $lst_msg[$id_msg1]->to == $lst_msg[$id_msg2]->to
+					&& $lst_msg[$id_msg1]->cc == $lst_msg[$id_msg2]->cc
+					&& $lst_msg[$id_msg1]->replyto == $lst_msg[$id_msg2]->replyto
+					&& $lst_msg[$id_msg1]->date == $lst_msg[$id_msg2]->date
+					&& $lst_msg[$id_msg1]->timestamp == $lst_msg[$id_msg2]->timestamp
+				) {
 					echo "Сообщения одинаковые";
+
+					if ($msg1->flags == $msg2->flags) {
+						echo "Сообщения одинаковые";
+					}
+				}else {
+					echo "Сообщения не одинаковые";
 				}
-			}else {
-				echo "Сообщения не одинаковые";
+				// очищаем массивы и переменные второго сообщения, функция unset()
+				unset($msg2, $msg2_parts, $uid_msg2);
+
+				// увеличим счётчик второго сообщения
+				$id_msg2++;
 			}
-			// очищаем массивы и переменные второго сообщения
 
-
-			// очищаем массивы и переменные первого сообщения
+			// очищаем массивы и переменные второго сообщения, функция unset()
+			unset($msg1, $msg1_parts, $uid_msg1);
+			// увеличим счётчики первого и второго сообщения
+			$id_msg1++;
+			$id_msg2++;
 		}
+		// конец программы
 		echo"Закончили";
 	}
 
