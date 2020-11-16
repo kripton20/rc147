@@ -3,13 +3,8 @@
 //Расширяем наш класс от класса rcube_plugin
 class rm_duplicate_messages extends rcube_plugin
 {
-
-	// Объявляем общедоступные переменные
-	//	public $my_messages;
-	//	public $m;
-	//	public $args;
-	//	public $a;
-
+	// Объявляем глобальные переменные
+	//
 	/**
 	* Инициализация плагина.
 	*/
@@ -18,13 +13,10 @@ class rm_duplicate_messages extends rcube_plugin
 		//Переменная $this относится к текущему классу и представляет собой неявный объект.
 		// rc - свойство этого объекта. Запишем туда системные настройки приложения.
 		$this->rc = rcmail::get_instance();
-
 		// переменной $tsk присвоим имя текущей задачи приложения
 		$tsk = $this->rc->task;
-
 		// в условии проверяем имя текущей задачи приложения, если 'mail'
 		if ($tsk == 'mail') {
-
 			/**
 			* *** Регистрация хуков ***
 			* Получаем заголовки и содержимое письма (но только при открытии письма)
@@ -33,7 +25,6 @@ class rm_duplicate_messages extends rcube_plugin
 			* Если вы хотите добавить больше заголовков, вам нужно получить их с помощью хука storage_init.
 			*/
 			//$this->add_hook('message_headers_output', array ($this,'headers'));
-
 			/**
 			* Получаем только заголовки писем
 			* Глобальный хук: messages_list
@@ -42,7 +33,6 @@ class rm_duplicate_messages extends rcube_plugin
 			* других переменных rcube_mail_header. Также ис-пользуйте его для передачи дополнительных флагов,
 			* связанных с плагином, в пользователь-ский интерфейс с помощью массива extra_flags.
 			*/
-
 			/**
 			* Получаем только заголовки писем
 			* Глобальный хук: messages_list
@@ -58,7 +48,6 @@ class rm_duplicate_messages extends rcube_plugin
 			* Если вы хотите добавить больше заголовков, вам нужно получить их с помощью хука storage_init.
 			*/
 			//$this->add_hook('message_headers_output', array($this,'my_message_headers_output1'));
-
 			/**
 			* Получаем только заголовки писем
 			* Глобальный хук: messages_list
@@ -68,22 +57,18 @@ class rm_duplicate_messages extends rcube_plugin
 			* связанных с плагином, в пользователь-ский интерфейс с помощью массива extra_flags.
 			*/
 			//$this->add_hook('messages_list', array($this,'messages_list'));
-
 			/**
 			* Загружаем сообщение
 			* */
 			//$this->add_hook('message_read', array($this,'message_read'));
-
 			// Вызываем функцию локализации - add_texts() из родительского класса интерфейса плагинов - rcube_plugin
 			// Файл локализации добавляется в общий массив $texts
 			// В массиве находятся ярлыки добавляемые клиенту
 			// localization - это имя папки, в массиве указываем ключи из массива файла локализации
 			// метод add_texts() записываетфайл локализации нашего плагина в общий массив локализации
 			$this->add_texts('localization', array('label1','label2'));
-
 			// загружаем файл скина плагина
 			$this->includeCSS();
-
 			/**
 			* Клиентские скрипты и элементы пользовательского интерфейса
 			* Конечно, плагины имеют большее отношение, чем просто отслеживание событий на стороне сервера.
@@ -95,7 +80,6 @@ class rm_duplicate_messages extends rcube_plugin
 			// добавим код JavaScript на определенную страницу / действие
 			// создайте файл сценария в папке вашего плагина, а затем включите его в init() метод вашего класса плагина с помощью
 			$this->include_script('rm_duplicate_messages.js');
-
 			// добавим кнопку в определенный контейнер на страницу
 			// параметр: array  $param      Хеш - массив с именованными параметрами (используемый в скинах)
 			// параметр: string $container  Имя контейнера, куда нужно добавить кнопки
@@ -114,7 +98,6 @@ class rm_duplicate_messages extends rcube_plugin
 				),
 				// в панель управления на верху (toolbar)
 				'toolbar');
-
 			/**
 			* Регистрация настраиваемых действий
 			* Теперь нужно объединить клиентскую функциональность плагина с действиями на стороне сервера.
@@ -147,13 +130,10 @@ class rm_duplicate_messages extends rcube_plugin
 			//$this->register_action('plugin.my_function', array($this,'my_function'));
 			$this->register_action('plugin.functions_start', array($this,'functions_start'));
 		}
-
 		// в условии проверяем имя текущей задачи приложения, если 'settings'
 		if ($tsk == 'settings') {
-
 			// загружаем файл скина плагина
 			//$this->includeCSS();
-
 			/**
 			* Регистрируем хуки сервера
 			* Способ работы хуков плагинов заключается в том, что в разное время, пока Roundcube обрабатывает, он проверяет,
@@ -175,16 +155,12 @@ class rm_duplicate_messages extends rcube_plugin
 			//$this->add_hook('preferences_sections_list', array($this,'insert_my_section1'));
 			//$this->add_hook('write_log', array($this,'functions_start'));
 			//$this->add_hook('preferences_save', array($this,'my_save_settings'));
-
 			// получаем список папок почтового ящика
 			//$this->add_hook('render_mailboxlist', array($this,'my_render_mailboxlist1'));
-
 			//$a = 1; // для остановки
-
 			// добавим код JavaScript на определенную страницу / действие
 			// создайте файл сценария в папке вашего плагина, а затем включите его в init() метод вашего класса плагина с помощью
 			//$this->include_script('rm_duplicate_messages.js');
-
 			// добавим кнопку в определенный контейнер на страницу
 			// параметр: array  $param      Хеш - массив с именованными параметрами (используемый в скинах)
 			// параметр: string $container  Имя контейнера, куда нужно добавить кнопки
@@ -202,7 +178,6 @@ class rm_duplicate_messages extends rcube_plugin
 			),
 			// в панель управления на верху (toolbar)
 			'toolbar');*/
-
 			/**
 			* Обработчик для запроса ajax.
 			* Зарегистрируем обработчик для определенного действия по запросу клиента.
@@ -218,10 +193,9 @@ class rm_duplicate_messages extends rcube_plugin
 	// основная вункция командной кнопки запускает все необходимые функции
 	function functions_start()
 	{
-		// Переменная i номер первого письма, переменная j номер второго письма.
+		// переменные $id_msg1 и $id_msg2 номера первого и второго сообщения в массиве $lst_msg
 		$id_msg1 = 0;
 		$id_msg2 = 1;
-
 		/**
 		* Инициализировать и получить объект хранения
 		* 	get_storage()
@@ -229,7 +203,6 @@ class rm_duplicate_messages extends rcube_plugin
 		* @return rcube_storage Storage Объект хранения
 		*/
 		$storage = $this->rc->get_storage();
-
 		/**
 		* Возвращает имя текущей папки
 		* 	get_folder (): string
@@ -237,7 +210,6 @@ class rm_duplicate_messages extends rcube_plugin
 		* @return string	Имя папки
 		*/
 		$folder  = $storage->get_folder();
-
 		/**
 		* Открытый метод для вывода заголовков сообщений.
 		* 	list_messages(string $folder = null, int $page = null, string $sort_field = null, string $sort_order = null, int $slice) : array
@@ -253,7 +225,7 @@ class rm_duplicate_messages extends rcube_plugin
 		*/
 		$lst_msg = $storage->list_messages($folder, null, null, 'ASC', null);
 		//$this->write_log_file($lst_msg);
-
+		//
 		/**
 		* В цикле перебираем массив $lst_msg и получаем uid каждого сообщения, присвоим это значение переменной $uid
 		* Обход индексного массива организуем при помощи цикла for (для ассоциативных массивов предназначен специализированный оператор foreach)
@@ -262,11 +234,9 @@ class rm_duplicate_messages extends rcube_plugin
 		* Первый цикл (для первого сообщения) начинаем с - нуля.
 		*/
 		for ($id_msg1; $id_msg1 < count($lst_msg);) {
-
 			// читаем заголовки первого сообщения в массиве $lst_msg
 			$uid_msg1 = $lst_msg[$id_msg1]->uid;
-
-			### Разбираем первое сообщение. Начало
+			/// Разбираем первое сообщение. Начало
 			/**
 			* Получение заголовков сообщений и структуры тела с сервера и построение структуры объекта,
 			* подобной той, которая создается PEAR::Mail_mimeDecode.
@@ -281,7 +251,7 @@ class rm_duplicate_messages extends rcube_plugin
 			// получаем заголовки сообщения
 			$msg1     = $storage->get_message($uid_msg1, $folder);
 			//$this->write_log_file($msg1);
-
+			//
 			/**
 			* Получаем тело определенного сообщения с сервера
 			* 	get_message_part(int $uid, string $part   = 1, \rcube_message_part $o_part = null, mixed $print = null, resource $fp = null, boolean $skip_charset_conv = false) : string
@@ -302,55 +272,23 @@ class rm_duplicate_messages extends rcube_plugin
 			}
 			// удалим переменную $part
 			unset($part);
-			/// Части сообщения для сравнения в условии. Начало
-			//			$msg1_subject = $lst_msg[$id_msg1]->subject;
-			//			$msg1_from = $lst_msg[$id_msg1]->from;
-			//			$msg1_to = $lst_msg[$id_msg1]->to;
-			//			$msg1_cc = $lst_msg[$id_msg1]->cc;
-			//			$msg1_replyto = $lst_msg[$id_msg1]->replyto;
-			//			// отправка
-			//			$msg1_date = $lst_msg[$id_msg1]->date;
-			//			$msg1_timestamp = $lst_msg[$id_msg1]->timestamp;
-			//			// прибытие
-			//			//$msg1_internaldate = $lst_msg[$id_msg1]->internaldate;
-			//			// флаги сообщения записываем в массив $msg1_flags
-			//			$msg1_flags = $msg1->flags;
-			//			/// Части сообщения для сравнения в условии. Конец
-			//			### Разбираем первое сообщение. Конец
-
+			/// Разбираем первое сообщение. Конец
 			// Второй цикл (для второго сообщения) начинаем с - единицы.
 			for ($id_msg2; $id_msg2 < count($lst_msg);) {
-
 				// читаем заголовки первого сообщения в массиве $lst_msg
 				$uid_msg2 = $lst_msg[$id_msg2]->uid;
-
-				### Разбираем первое сообщение. Начало
+				// Разбираем второе сообщение. Начало
 				// получаем заголовки сообщения
 				$msg2     = $storage->get_message($uid_msg2, $folder);
 				//$this->write_log_file($msg2);
-
+				//
 				// в цикле разберём части сообщения и записываем в массив $msg_parts каждую часть в свой ключ $part
 				for ($part = 0; $part < count($msg2->structure->parts); $part++) {
 					$msg2_parts[$part] = $storage->get_message_part($uid_msg2, $part, null, null, null, false);
 				}
 				// удалим переменную $part
 				unset($part);
-				/// Части сообщения для сравнения в условии. Начало
-				//				$msg2_subject = $lst_msg[$id_msg2]->subject;
-				//				$msg2_from = $lst_msg[$id_msg2]->from;
-				//				$msg2_to = $lst_msg[$id_msg2]->to;
-				//				$msg2_cc = $lst_msg[$id_msg2]->cc;
-				//				$msg2_replyto = $lst_msg[$id_msg2]->replyto;
-				//				// отправка
-				//				$msg2_date = $lst_msg[$id_msg2]->date;
-				//				$msg2_timestamp = $lst_msg[$id_msg2]->timestamp;
-				//				// прибытие
-				//				//$msg2_internaldate = $lst_msg[$id_msg2]->internaldate;
-				//				// флаги сообщения записываем в массив $msg2_flags
-				//				$msg2_flags = $msg2->flags;
-				/// Части сообщения для сравнения в условии. Конец
-				//### Разбираем первое сообщение. Конец
-
+				/// Разбираем второе сообщение. Конец
 				// условие сверки сообщений (неиспользуемые && $msg1_internaldate == $msg2_internaldate)
 				if ($lst_msg[$id_msg1]->subject == $lst_msg[$id_msg2]->subject
 					&& $lst_msg[$id_msg1]->from == $lst_msg[$id_msg2]->from
@@ -361,25 +299,24 @@ class rm_duplicate_messages extends rcube_plugin
 					&& $lst_msg[$id_msg1]->timestamp == $lst_msg[$id_msg2]->timestamp
 				) {
 					echo "Сообщения одинаковые";
-
+					// условие проверки флагов сообщений
 					if ($msg1->flags == $msg2->flags) {
 						echo "Сообщения одинаковые";
 					}
-				}else {
+				}
+				else {
 					echo "Сообщения не одинаковые";
 				}
 				// очищаем массивы и переменные второго сообщения, функция unset()
 				unset($msg2, $msg2_parts, $uid_msg2);
-
 				// увеличим счётчик второго сообщения
 				$id_msg2++;
 			}
-
 			// очищаем массивы и переменные второго сообщения, функция unset()
 			unset($msg1, $msg1_parts, $uid_msg1);
-			// увеличим счётчики первого и второго сообщения
+			// увеличим счётчики первого и второго сообщения и повторяем весь цикл
 			$id_msg1++;
-			$id_msg2++;
+			$id_msg2 = $id_msg1 + 1;
 		}
 		// конец программы
 		echo"Закончили";
@@ -392,11 +329,9 @@ class rm_duplicate_messages extends rcube_plugin
 	{
 		// двумерный массив $args представляет собой строку в секции списка установленных плагинов
 		$args['list']['rmduplicate'] = array(
-
 			// ключ id - содержит название секции куда вставлять надпись - имя нашего плагина
 			// массив rmduplicate содержит id и название секции (section) - куда вставляется строка с надписью названия нашего плагина
 			'id'=> 'rmduplicate',
-
 			// ключ 'label1' содержит надпись (из файла локализации) с именем нашего плагина в списке секции
 			// добавляем в массив $args надпись с именем нашего плагина
 			// имя получаем функцией $this->gettext('label1') из файла локализации
@@ -410,87 +345,64 @@ class rm_duplicate_messages extends rcube_plugin
 		// если обрабатываемая секция - 'rmduplicate', которую мы создали в предыдущей функции
 		// выполняем код ниже: добавим на страницу надписи и переключатели плагина
 		if ($args['section'] == 'rmduplicate') {
-
 			// создадим два поля для ввода номеров: первое письмо и второе письмо
 			// 'name' => 'имя_тега_html', 'id' => $teg_id, 'size' => размер поля (ширина)
 			$first_letter = new html_inputfield(array('name'=> 'first_letter','id'  => $teg_id,'size'=> 5));
 			$second_letter = new html_inputfield(array('name'=> 'second_letter','id'  => $teg_id,'size'=> 5));
-
 			// Обертка для rcube::gettext() с добавлением ID плагина в качестве домена
 			// функция $this->gettext('параметр_из_общего_массива_локализации')
 			// выводим надпись на страницу "О программе" из основного файла локализации приложения
 			$args['blocks']['about']['name'] = $this->gettext('about');
-
 			// выводим надпись из метки 'label2', из файла локализации плагина
 			$args['blocks']['about']['content'] = $this->gettext('label2');
-
 			// Блок "Основные настройки". Начало
 			// Выводим надпись "Основные настройки", из основного файла локализации приложения
 			$args['blocks']['main']['name'] = $this->gettext('mainoptions');
-
 			// номер первого письма
 			$args['blocks']['main']['options']['first_letter'] = array(
-
 				// выводим надпись из метки 'label3', из файла локализации плагина
 				'title'=> $this->gettext('label3'),
-
 				// текстовое поле с номером первого письма
 				'content'=> $first_letter->show(1) //"текстовое поле с номером первого письма" //$this->gettext('')
 			);
-
 			// номер второго письма
 			$args['blocks']['main']['options']['second_letter'] = array(
-
 				// выводим надпись из метки 'label4', из файла локализации плагина
 				'title'=> $this->gettext('label4'),
-
 				// текстовое поле с номером второго письма
 				'content'=> $second_letter->show(2) //"текстовое поле с номером второго письма" //$this->gettext('')
 			);
 			// Блок "Основные настройки". Конец
-
 			// Блок "Выводная информация о работе плагина". Начало
 			// Выводим надпись из метки 'label5', из файла локализации плагина
 			$args['blocks']['letters']['name'] = $this->gettext('label5');
-
 			// номер первого письма
 			$args['blocks']['letters']['options']['first_current_letter'] = array(
-
 				// выводим надпись из метки 'label3', из файла локализации плагина
 				'title'=> $this->gettext('label3'),
-
 				// текстовое поле с номером первого письма
 				'content'=> 123 // "надпись с номером первого письма" //$this->gettext('')
 			);
-
 			// номер второго письма
 			$args['blocks']['letters']['options']['second_current_letter'] = array(
-
 				// выводим надпись из метки 'label4', из файла локализации плагина
 				'title'=> $this->gettext('label4'),
-
 				// текстовое поле с номером второго письма
 				'content'=> 456 // "надпись с номером второго письма" //$this->gettext('')
 			);
-
 			foreach ($list_folder as  $val) {
 				echo  $val;  // выведет 123
 			}
-
 			// Выводим надпись из метки 'label5', из файла локализации плагина
 			$args['blocks']['list_folders']['name'] = "Список папок"; // $this->gettext('label5');
-
 			// список папок $list_folders
 			$args['blocks']['list_folders']['options'] = array(
-
 				// выводим надпись из метки 'label4', из файла локализации плагина
 				'title'=> "Список папок",
-
 				// список папок
 				'content'=> 1
 			);
 			// Блок "Основные настройки". Конец
-
 			// вызываем функцию записи лог - файла
 			//$this->write_log_file('sections ', $args);
 		}
@@ -502,14 +414,12 @@ class rm_duplicate_messages extends rcube_plugin
 	{
 		//Получаем текущий системный скин
 		$skin_path = $this->local_skin_path();
-
 		//Проверяем если путь к файлу скина плагина сформирован
 		if (is_file($this->home . "/$skin_path/rm_duplicate_messages.css")) {
-
 			// То добавляем его в текущую HTML - страницу
 			$this->include_stylesheet("$skin_path/rm_duplicate_messages.css");
-		} else {
-
+		}
+		else {
 			// Иначе добавляем его в текущую HTML - страницу другим способом
 			$this->include_stylesheet('css/rm_duplicate_messages.css');
 		}
