@@ -83,6 +83,7 @@ class rm_duplicate_messages extends rcube_plugin
 			// добавим кнопку в определенный контейнер на страницу
 			// параметр: array  $param      Хеш - массив с именованными параметрами (используемый в скинах)
 			// параметр: string $container  Имя контейнера, куда нужно добавить кнопки
+			// первая кнопка
 			$this->add_button(
 				array(
 					'domain'  => $this->ID,// id = "rcmbtn106"
@@ -96,8 +97,22 @@ class rm_duplicate_messages extends rcube_plugin
 					'class'   => 'button clean',// класс стиля class = "button clean"
 					'classact'=> 'button clean',
 				),
-				// в панель управления на верху (toolbar)
-				'toolbar');
+				'toolbar'); // в панель управления на верху (toolbar)
+			//			// вторая кнопка которая подменяет первую
+			//			$this->add_button(
+			//				array(
+			//					'domain'  => $this->ID,// id = "rcmbtn106"
+			//					'type'=> 'link',// тип кнопки
+			//					'label'=> 'label6',// надпись на кнопке
+			//					'title'=> 'label7',// всплывающая подсказка
+			//					'command'=> 'plugin.button_comand',// комманда onclick
+			//					//'onclick'  => "rcmail.command('menu - open', 'enigmamenu', event.target, event)",
+			//					'width'=> 32,// размеры
+			//					'height'=> 32,
+			//					'class'   => 'button clean',// класс стиля class = "button clean"
+			//					'classact'=> 'button clean',
+			//				),
+			//				'toolbar'); // в панель управления на верху (toolbar)
 			/**
 			* Регистрация настраиваемых действий
 			* Теперь нужно объединить клиентскую функциональность плагина с действиями на стороне сервера.
@@ -193,9 +208,8 @@ class rm_duplicate_messages extends rcube_plugin
 	// основная вункция командной кнопки запускает все необходимые функции
 	function functions_start()
 	{
-		// переменные $id_msg1 и $id_msg2 номера первого и второго сообщения в массиве $lst_msg
-		$id_msg1 = 0;
-		$id_msg2 = 1;
+		$this->rc = rcmail::get_instance();
+		
 		/**
 		* Инициализировать и получить объект хранения
 		* 	get_storage()
@@ -203,6 +217,9 @@ class rm_duplicate_messages extends rcube_plugin
 		* @return rcube_storage Storage Объект хранения
 		*/
 		$storage = $this->rc->get_storage();
+		// переменные $id_msg1 и $id_msg2 номера первого и второго сообщения в массиве $lst_msg
+		$id_msg1 = 0;
+		$id_msg2 = 1;
 		/**
 		* Возвращает имя текущей папки
 		* 	get_folder (): string
@@ -234,6 +251,8 @@ class rm_duplicate_messages extends rcube_plugin
 		* Первый цикл (для первого сообщения) начинаем с - нуля.
 		*/
 		for ($id_msg1; $id_msg1 < count($lst_msg);) {
+			// выводим сообщение
+
 			// читаем заголовки первого сообщения в массиве $lst_msg
 			$uid_msg1 = $lst_msg[$id_msg1]->uid;
 			/// Разбираем первое сообщение. Начало
@@ -299,9 +318,18 @@ class rm_duplicate_messages extends rcube_plugin
 					&& $lst_msg[$id_msg1]->timestamp == $lst_msg[$id_msg2]->timestamp
 				) {
 					echo "Сообщения одинаковые";
-					// условие проверки флагов сообщений
+					// условие проверки флагов сообщений, если флаги одинаковые - удаляем второе сообщение
 					if ($msg1->flags == $msg2->flags) {
-						echo "Сообщения одинаковые";
+						echo "Флаги сообщения одинаковые";
+						// если у второго сообщения установлен флаг:
+						// 'ANSWERED', 'FLAGGED' или 'FORWARDED' то удаляем первое сообщение
+					}
+					elseif (isset($msg2->flags['ANSWERED'])
+						|| isset($msg2->flags['FLAGGED'])
+						|| isset($msg2->flags['FORWARDED'])) {
+						echo "Флаги сообщения разные: - установлен флаг 'ANSWERED', 'FLAGGED' или 'FORWARDED'";
+						// функция выделения сообщения в списке
+
 					}
 				}
 				else {
@@ -318,8 +346,31 @@ class rm_duplicate_messages extends rcube_plugin
 			$id_msg1++;
 			$id_msg2 = $id_msg1 + 1;
 		}
+		// функция включения командной кнопки
 		// конец программы
 		echo"Закончили";
+		// функция отключения командной кнопки
+		// Отсюда обратно в js - файл
+		//$this->rc->output->command('plugin.enable_command', array('message' => 'done.'));
+		//$rcmail->output->command('plugin.somecallback', array('message' => 'done.'));
+		/**
+		* Вызов команды display_message
+		* 	show_message(string $message, string $type = 'notice', array $vars = null, boolean $override = true, int $timeout)
+		* 
+		* Аргументы
+		* @param $message string Сообщение для отображения
+		* @param $type string Тип сообщения [notice|confirm|error] (уведомление, подтверждение, ошибка)
+		* @param $vars array Пары "ключ-значение" должны быть заменены в локализованном тексте
+		* @param $override boolean Отменить последнее установленное сообщение
+		* @param $timeout int Время отображения сообщения в секундах
+		*/
+		$OUTPUT = new rcmail_html_page();
+		$str = "Сообщение";
+		$OUTPUT->show_message($str, 'notice', null, true, 1000);
+		$OUTPUT->show_message($str, 'confirm');
+		
+		$a=1;
+		
 	}
 
 	// Вставим название нашей секции. Вставим свою секцию с нашим плагином
@@ -430,8 +481,7 @@ class rm_duplicate_messages extends rcube_plugin
 	* file_put_contents — Пишет данные в файл
 	* print_r — Выводит удобочитаемую информацию о переменной
 	* Если filename не существует, файл будет создан.
-	* Иначе, существующий файл будет перезаписан, за исключением случая,
-	* если указан флаг FILE_APPEND
+	* Иначе, существующий файл будет перезаписан, за исключением случая, если указан флаг FILE_APPEND
 	*/
 	protected function write_log_file ($args)
 	{
