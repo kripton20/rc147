@@ -66,7 +66,7 @@ class rm_duplicate_messages extends rcube_plugin
 			// В массиве находятся ярлыки добавляемые клиенту
 			// localization - это имя папки, в массиве указываем ключи из массива файла локализации
 			// метод add_texts() записываетфайл локализации нашего плагина в общий массив локализации
-			$this->add_texts('localization', array('label1','label2'));
+			$this->add_texts('localization', array('label1','label2','successful'));
 			// загружаем файл скина плагина
 			$this->includeCSS();
 			/**
@@ -208,8 +208,47 @@ class rm_duplicate_messages extends rcube_plugin
 	// основная вункция командной кнопки запускает все необходимые функции
 	function functions_start()
 	{
-		$this->rc = rcmail::get_instance();
+		/**
+		* Вызов команды display_message
+		* 	show_message(string $message, string $type = 'notice', array $vars = null, boolean $override = true, int $timeout)
+		*
+		* Аргументы
+		* @param $message string Сообщение для отображения
+		* @param $type string Тип сообщения [notice|confirm|confirmation|error] (уведомление, подтвердить, подтверждение, ошибка)
+		* @param $vars array Пары "ключ-значение" должны быть заменены в локализованном тексте
+		* @param $override boolean Отменить последнее установленное сообщение
+		* @param $timeout int Время отображения сообщения в секундах
+		*/
+		$str = "Сообщения проверены";
+		$this->rc->output->show_message($this->gettext('successful'), 'confirmation', $vars=NULL, $override = TRUE);
+		// функция отправки вывода клиенту
+		$this->rc->output->send();
 		
+		//$OUTPUT = new rcmail_html_page();
+		//$OUTPUT->show_message($str, 'error', $vars = null, $override = true, 1000000);
+		//$OUTPUT->show_message($str, 'notice', null, true, 1000);
+		//$OUTPUT->show_message($str, 'confirm');
+		//$OUTPUT->send();
+		//$rcmail = rcmail::get_instance();
+		//$rcmail->output->command('plugin.somecallback', array('message' => 'done.'));
+		//$this->rc->output->command('plugin.somecallback', array('message' => 'done.'));
+		//$rcmail = rcmail::get_instance();
+        //$rcmail->output->show_message($this->gettext('label1'), 'warning');
+		//$rcmail->output->send();
+		$a      = 1;
+		
+		// функция отключения командной кнопки
+		// Отсюда обратно в js - файл
+		//$this->rc->output->command('plugin.functions_start', array('message' => 'done.'));
+		/**
+		* Эта функция реализует шаблон проектирования singleton
+		*
+		* @param int    $mode Параметры для инициализации этим экземпляром. См. Константы rcube::INIT_WITH_ *
+		* @param string $env  Имя среды для запуска (например, live, dev, test)
+		*
+		* @return rcube Единственный экземпляр
+		*/
+		$this->rc = rcmail::get_instance();
 		/**
 		* Инициализировать и получить объект хранения
 		* 	get_storage()
@@ -252,7 +291,6 @@ class rm_duplicate_messages extends rcube_plugin
 		*/
 		for ($id_msg1; $id_msg1 < count($lst_msg);) {
 			// выводим сообщение
-
 			// читаем заголовки первого сообщения в массиве $lst_msg
 			$uid_msg1 = $lst_msg[$id_msg1]->uid;
 			/// Разбираем первое сообщение. Начало
@@ -349,27 +387,6 @@ class rm_duplicate_messages extends rcube_plugin
 		// функция включения командной кнопки
 		// конец программы
 		echo"Закончили";
-		// функция отключения командной кнопки
-		// Отсюда обратно в js - файл
-		//$this->rc->output->command('plugin.enable_command', array('message' => 'done.'));
-		//$rcmail->output->command('plugin.somecallback', array('message' => 'done.'));
-		/**
-		* Вызов команды display_message
-		* 	show_message(string $message, string $type = 'notice', array $vars = null, boolean $override = true, int $timeout)
-		* 
-		* Аргументы
-		* @param $message string Сообщение для отображения
-		* @param $type string Тип сообщения [notice|confirm|error] (уведомление, подтверждение, ошибка)
-		* @param $vars array Пары "ключ-значение" должны быть заменены в локализованном тексте
-		* @param $override boolean Отменить последнее установленное сообщение
-		* @param $timeout int Время отображения сообщения в секундах
-		*/
-		$OUTPUT = new rcmail_html_page();
-		$str = "Сообщение";
-		$OUTPUT->show_message($str, 'notice', null, true, 1000);
-		$OUTPUT->show_message($str, 'confirm');
-		
-		$a=1;
 		
 	}
 
