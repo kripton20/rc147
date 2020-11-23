@@ -193,6 +193,8 @@ class rm_duplicate_messages extends rcube_plugin
 	// основная вункция командной кнопки запускает все необходимые функции
 	function functions_start()
 	{
+		// добавим локализованную метку в клиентскую среду
+		$this->rc->output->add_label('plugin.checkdpl', 'plugin.successful');
 		/**
 		* Вызов клиентского метода
 		*
@@ -201,12 +203,6 @@ class rm_duplicate_messages extends rcube_plugin
 		*
 		* Комманда выполняется после функции - send()
 		*/
-		//$rcmail->output->command('plugin.somecallback1', array('message'=> 'done.'));
-		
-		$this->rc->output->add_label('plugin.checkdpl', 'plugin.successful');
-		//$this->rc->output->add_label('checkdpl', 'successful');
-		//$this->rc->output->add_label('rm_duplicate_messages.checkdpl', 'rm_duplicate_messages.successful');
-		
 		$this->rc->output->command('plugin.somecallback1', array('message'=> 'done.'));
 		/**
 		* Эта функция реализует шаблон проектирования singleton
@@ -217,7 +213,6 @@ class rm_duplicate_messages extends rcube_plugin
 		* @return rcube Единственный экземпляр
 		*/
 		$this->rc = rcmail::get_instance();
-
 		/**
 		* Инициализировать и получить объект хранения
 		* 	get_storage()
@@ -332,8 +327,8 @@ class rm_duplicate_messages extends rcube_plugin
 					if ($msg1->flags == $msg2->flags) {
 						//echo "Флаги сообщения одинаковые";
 						// выделяем дублирующееся сообщение в списке
-						$msg2->flags = array('DELETED'=> 'TRUE', 'DUBLIKAT'=> 'TRUE');
-						$msg2->flags = array('FLAGGED'=> 'TRUE', 'DUBLIKAT'=> 'TRUE');
+						$msg2->flags = array('DELETED' => 'TRUE','DUBLIKAT'=> 'TRUE');
+						$msg2->flags = array('FLAGGED' => 'TRUE','DUBLIKAT'=> 'TRUE');
 						//$msg2->save();
 					}
 					// если у второго сообщения установлен флаг:
@@ -343,8 +338,8 @@ class rm_duplicate_messages extends rcube_plugin
 						|| isset($msg2->flags['FORWARDED'])) {
 						//echo "Флаги сообщения разные: - установлен флаг 'ANSWERED', 'FLAGGED' или 'FORWARDED'";
 						// выделяем дублирующееся сообщение в списке
-						$msg1->flags = array('DELETED'=> 'TRUE', 'DUBLIKAT'=> 'TRUE');
-						$msg1->flags = array('FLAGGED'=> 'TRUE', 'DUBLIKAT'=> 'TRUE');
+						$msg1->flags = array('DELETED' => 'TRUE','DUBLIKAT'=> 'TRUE');
+						$msg1->flags = array('FLAGGED' => 'TRUE','DUBLIKAT'=> 'TRUE');
 						//$msg1->save();
 					}
 				}
@@ -376,7 +371,7 @@ class rm_duplicate_messages extends rcube_plugin
 		* @param $override boolean Отменить последнее установленное сообщение
 		* @param $timeout int Время отображения сообщения в секундах
 		*/
-		$this->rc->output->show_message($this->gettext('successful'), 'confirmation', $vars = NULL, $override = TRUE);
+		//$this->rc->output->show_message($this->gettext('successful'), 'confirmation', $vars = NULL, $override = TRUE);
 		// функция отправки вывода клиенту, и работа PHP - скрипта заканчивается
 		$this->rc->output->send();
 	}
