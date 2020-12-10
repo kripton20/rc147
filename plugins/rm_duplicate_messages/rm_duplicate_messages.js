@@ -23,21 +23,43 @@
 // https://github.com/roundcube/roundcubemail/wiki/Javascript-API
 */
 function button_function () {
-	// отключим нашу коммандную кнопку
-	window.rcmail.enable_command('plugin.btn_cmd_rm_dublecates', false);
-	// включаем блокировку интерфейса, выводим сообщение о работе процедуры поиска дубликатов
-	var lock = rcmail.set_busy(true, 'rm_duplicate_messages.checkdpl'),
+	//
+	buttons={
+	};
+	// кнопка запуска процедуры проверки
+	buttons[rcmail.get_label('rm_duplicate_messages.label5')] = function(e) {
+		// включаем блокировку интерфейса, выводим сообщение о работе процедуры поиска дубликатов
+		///var lock = rcmail.set_busy(true, 'rm_duplicate_messages.checkdpl'),
 		// этот параметр для того чтобы это сообщение перекрывалось следующим сообщением
 		// о том что процедура поиска дубликатов сообщений завершена
-		params = rcmail.check_recent_params();
-	// запускаем PHP-функцию поиска дубликатов сообщений - rm_dublecates
-	// вызываем метод http_post объекта rcmail (параметры через запятую)
-	rcmail.http_post(
-		'plugin.rm_dublecates',
-		params,
-		lock
-	);
+		///params = rcmail.check_recent_params();
+		// отключим нашу коммандную кнопку
+		window.rcmail.enable_command('plugin.btn_cmd_rm_dublecates', false);
+		// запускаем PHP-функцию поиска дубликатов сообщений - rm_dublecates
+		// вызываем метод http_post объекта rcmail (параметры через запятую)
+		///rcmail.http_post('plugin.rm_dublecates', params, lock);
+
+		/*//		Повторная обработка данных ответа на клиенте:
+		//    function some_callback_function(response)
+		//    {
+		//      $('#somecontainer').html(response.message);
+		//    }
+		//Обратите внимание, что функция обратного вызова может принимать только один аргу-мент. Поэтому вам необходимо упаковать все данные ответа в массив, который будет автоматически преобразован в объект javascript.
+		*/
+		rcmail.http_post('plugin.rm_dublecates',
+			function() {
+				$('#dstus').addClass('busy').html(rcmail.get_label('rm_duplicate_messages.checkdpl'));
+			}
+		);
+		// кнопка отмены
+		buttons[rcmail.get_label('cancel')] = function(e) {
+			$(this).remove();
+		};
+	};
+	// показываем диалоговое окно
+	rcmail.show_popup_dialog(rcmail.get_label('rm_duplicate_messages.label4'), rcmail.get_label('rm_duplicate_messages.label3'), buttons);
 }
+
 
 /**
 * Запросы и обратные вызовы Ajax
@@ -82,14 +104,20 @@ if (window.rcmail) {
 	rcmail.addEventListener('plugin.successful', function successful(){
 			// включим нашу коммандную кнопку
 			window.rcmail.enable_command('plugin.btn_cmd_rm_dublecates', true);
+
 			// получим значение переменной от сервера
-			var marked_msg = rcmail.env.marked_msg;
+			// поместим в переменную msg_marked колличество отмеченных сообщений
+			var msg_marked = rcmail.env.msg_marked,
+			// получим локализованные метки
+			msg_successful = rcmail.get_label('rm_duplicate_messages.successful'),
+			// в переменную msg поместим полное сообщение которое нужно вывести
+			msg = msg_successful + msg_marked;
+
 			// выводим уведомление о завершении работы нашей функции - rm_dublecates обработки сообщений
 			// в первом параметре получаем локализованную метку, во втором указываем тип выводимого сообщения
-			rcmail.display_message(rcmail.get_label('rm_duplicate_messages.successful'), 'confirmation');
+			rcmail.display_message(msg, 'confirmation');
+
 			// обновим страницу
 			rcmail.refresh();
-			
-			var name1 = 1;
 		});
 }
