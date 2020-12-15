@@ -1,14 +1,14 @@
 function msg_search(day1, month1, year1, day2, month2, year2){
 	// делаем запрос на сервер - берём массив списка писем
-	
+
 	// включаем блокировку интерфейса, выводим сообщение о работе процедуры поиска дубликатов
 	var lock = rcmail.set_busy(true, 'rm_duplicate_messages.checkdpl'),
 	// этот параметр для того чтобы это сообщение перекрывалось следующим сообщением
 	// о том что процедура поиска дубликатов сообщений завершена
 	params = rcmail.check_recent_params();
-	// запускаем PHP-функцию поиска дубликатов сообщений - rm_dublecates
+	// запускаем PHP-функцию поиска дубликатов сообщений - 'select_msg'
 	// вызываем метод http_post объекта rcmail (параметры через запятую)
-	rcmail.http_post('plugin.rm_dublecates', params, lock);
+	rcmail.http_post('plugin.select_msg', params, lock);
 }
 // зупускаем процедуру поиска/удаления дубликатов сообщений
 function msg_search_start () {
@@ -68,6 +68,14 @@ function msg_search_start () {
 	rcmail.show_popup_dialog(content, title, buttons);
 }
 
+// функция перебора массива 'lst_msg' полученного от функции 'lst_msg' из скрипта PHP
+function lst_msg(lst_msg, folder){
+	// присвоим переменной 'lst_msg' и 'folder' значение массива 'lst_msg' и имя папки 'folder' из PHP-скрипта
+	var lst_msg=rcmail.env.lst_msg, folder=rcmail.env.folder;
+	
+	
+}
+
 /**
 * Запросы и обратные вызовы Ajax
 * Если ваши настраиваемые действия на стороне сервера должны отправить обратно некоторые данные
@@ -107,11 +115,17 @@ if (window.rcmail) {
 			*/
 			rcmail.register_command('plugin.btn_cmd_rm_dublecates', msg_search_start, true);
 		});
-	// функция включения кнопки
+
+	// слушает событие от функции 'lst_msg'
+	rcmail.addEventListener('plugin.lst_msg', function (a,b){
+			// вызываем функцию 'lst_msg' с двумя параметрами a и b (массив писем и текущая папка)
+			lst_msg(a,b);
+		});
+
+	// функция включения кнопки и сообщения о завершении работы процедуры по поиску дубликатов
 	rcmail.addEventListener('plugin.successful', function successful(){
 			// включим нашу коммандную кнопку
 			window.rcmail.enable_command('plugin.btn_cmd_rm_dublecates', true);
-
 			// получим значение переменной от сервера
 			// поместим в переменную msg_marked колличество отмеченных сообщений
 			var msg_marked = rcmail.env.msg_marked,
@@ -119,11 +133,9 @@ if (window.rcmail) {
 			msg_successful = rcmail.get_label('rm_duplicate_messages.successful'),
 			// в переменную msg поместим полное сообщение которое нужно вывести
 			msg = msg_successful + msg_marked;
-
-			// выводим уведомление о завершении работы нашей функции - rm_dublecates обработки сообщений
+			// выводим уведомление о завершении работы нашей процедуры - удаления дубликатов сообщений
 			// в первом параметре получаем локализованную метку, во втором указываем тип выводимого сообщения
 			rcmail.display_message(msg, 'confirmation');
-
 			// обновим страницу
 			rcmail.refresh();
 		});
