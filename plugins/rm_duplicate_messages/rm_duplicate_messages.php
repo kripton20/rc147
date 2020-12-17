@@ -164,7 +164,7 @@ class rm_duplicate_messages extends rcube_plugin
 		*/
 		$folder  = $storage->get_folder();
 		/**
-		* Открытый метод для вывода заголовков сообщений.
+		* Открытый метод для вывода заголовков сообщений
 		* 	list_messages(string $folder = null, int $page = null, string $sort_field = null, string $sort_order = null, int $slice) : array
 		*
 		* @param string $folder        Имя папки
@@ -185,7 +185,7 @@ class rm_duplicate_messages extends rcube_plugin
 		* @param mixed $value Значение свойства
 		*/
 		// передадим значение переменной 'folder' в клиентскую среду (браузер) под именем 'folder'
-		$this->rc->output->set_env('folder', $folder);
+		//$this->rc->output->set_env('folder', $folder);
 		// передадим значение переменной '$lst_msg' в клиентскую среду (браузер) под именем 'lst_msg'
 		$this->rc->output->set_env('lst_msg', $lst_msg);
 		/**
@@ -198,9 +198,9 @@ class rm_duplicate_messages extends rcube_plugin
 		*/
 		$this->rc->output->command('plugin.lst_msg');
 		/**
-		* Отправить вывод клиенту.
 		* Функция отправки вывода клиенту, после этого работа PHP-скрипта заканчивается
 		*/
+		// отправим собранные данные клиенту
 		$this->rc->output->send();
 	}
 	

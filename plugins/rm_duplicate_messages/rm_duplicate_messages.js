@@ -1,6 +1,5 @@
 function msg_search(day1, month1, year1, day2, month2, year2){
 	// делаем запрос на сервер - берём массив списка писем
-
 	// включаем блокировку интерфейса, выводим сообщение о работе процедуры поиска дубликатов
 	var lock = rcmail.set_busy(true, 'rm_duplicate_messages.checkdpl'),
 	// этот параметр для того чтобы это сообщение перекрывалось следующим сообщением
@@ -9,6 +8,7 @@ function msg_search(day1, month1, year1, day2, month2, year2){
 	// запускаем PHP-функцию поиска дубликатов сообщений - 'select_msg'
 	// вызываем метод http_post объекта rcmail (параметры через запятую)
 	rcmail.http_post('plugin.select_msg', params, lock);
+	
 }
 // зупускаем процедуру поиска/удаления дубликатов сообщений
 function msg_search_start () {
@@ -69,11 +69,18 @@ function msg_search_start () {
 }
 
 // функция перебора массива 'lst_msg' полученного от функции 'lst_msg' из скрипта PHP
-function lst_msg(lst_msg, folder){
-	// присвоим переменной 'lst_msg' и 'folder' значение массива 'lst_msg' и имя папки 'folder' из PHP-скрипта
-	var lst_msg=rcmail.env.lst_msg, folder=rcmail.env.folder;
+function lst_msg(lst_msg){
+	// переменной 'lst_msg' присвоим значение массива 'lst_msg' из PHP-скрипта
+	var lst_msg=rcmail.env.lst_msg;
+	//a=this.get_message_mailbox(uid);
+	//var mbox = this.get_message_mailbox(1553);
+	//var uid = this.get_single_uid(),
 	
-	
+	//var a=1553, msg=this.get_message_mailbox(a);
+	// включим нашу коммандную кнопку
+	window.rcmail.enable_command('plugin.btn_cmd_rm_dublecates', true);
+
+
 }
 
 /**
@@ -117,9 +124,9 @@ if (window.rcmail) {
 		});
 
 	// слушает событие от функции 'lst_msg'
-	rcmail.addEventListener('plugin.lst_msg', function (a,b){
+	rcmail.addEventListener('plugin.lst_msg', function (a){
 			// вызываем функцию 'lst_msg' с двумя параметрами a и b (массив писем и текущая папка)
-			lst_msg(a,b);
+			lst_msg(a);
 		});
 
 	// функция включения кнопки и сообщения о завершении работы процедуры по поиску дубликатов
