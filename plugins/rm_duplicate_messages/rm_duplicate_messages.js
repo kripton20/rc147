@@ -1,15 +1,3 @@
-function msg_search(day1, month1, year1, day2, month2, year2){
-	// делаем запрос на сервер - берём массив списка писем
-	// включаем блокировку интерфейса, выводим сообщение о работе процедуры поиска дубликатов
-	var lock = rcmail.set_busy(true, 'rm_duplicate_messages.checkdpl'),
-	// этот параметр для того чтобы это сообщение перекрывалось следующим сообщением
-	// о том что процедура поиска дубликатов сообщений завершена
-	params = rcmail.check_recent_params();
-	// запускаем PHP-функцию поиска дубликатов сообщений - 'select_msg'
-	// вызываем метод http_post объекта rcmail (параметры через запятую)
-	rcmail.http_post('plugin.select_msg', params, lock);
-	
-}
 // зупускаем процедуру поиска/удаления дубликатов сообщений
 function msg_search_start () {
 	// переменные диалогового окна
@@ -47,12 +35,20 @@ function msg_search_start () {
 		day2 = document.getElementById('day2').value,
 		month2 = document.getElementById('month2').value,
 		year2 = document.getElementById('year2').value;
-		// отключим нашу коммандную кнопку
-		window.rcmail.enable_command('plugin.btn_cmd_rm_dublecates', false);
 		// закрываем окно
 		$(this).remove();
-		// вызываем функцию 'msg_search'
-		msg_search(day1, month1, year1, day2, month2, year2, buttons);
+		// делаем запрос на сервер - берём массив списка писем
+		// включаем блокировку интерфейса, выводим сообщение о работе процедуры поиска дубликатов
+		var lock = rcmail.set_busy(true, 'rm_duplicate_messages.checkdpl'),
+		// этот параметр для того чтобы это сообщение перекрывалось следующим сообщением
+		// о том что процедура поиска дубликатов сообщений завершена
+		params = rcmail.check_recent_params();
+		// запускаем PHP-функцию поиска дубликатов сообщений - 'select_msg'
+		// вызываем метод http_post объекта rcmail (параметры через запятую)
+		rcmail.http_post('plugin.select_msg', params, lock);
+		// отключим нашу коммандную кнопку
+		window.rcmail.enable_command('plugin.btn_cmd_rm_dublecates', false);
+		
 	};
 	// кнопка запуска процедуры - 'Удалить дубликаты'
 	buttons[rcmail.get_label('rm_duplicate_messages.label11')] = function(e) {
@@ -75,7 +71,7 @@ function lst_msg(lst_msg){
 	//a=this.get_message_mailbox(uid);
 	//var mbox = this.get_message_mailbox(1553);
 	//var uid = this.get_single_uid(),
-	
+
 	//var a=1553, msg=this.get_message_mailbox(a);
 	// включим нашу коммандную кнопку
 	window.rcmail.enable_command('plugin.btn_cmd_rm_dublecates', true);
