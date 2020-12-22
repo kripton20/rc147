@@ -146,11 +146,6 @@ class rm_duplicate_messages extends rcube_plugin
 	// основная вункция командной кнопки запускает все необходимые функции
 	function rm_dublecates()
 	{
-		// Устанавливается на неограниченный период времени
-		// You can do set_time_limit(0); so that the script will run forever - however this is not recommended and your web server might catch you out with an imposed HTTP timeout (usually around 5 minutes).
-		//You should check your web server's guides for more information about HTTP timeouts.
-		//ini_set('max_execution_time', 0);
-		//set_time_limit(0);
 		/**
 		* Инициализировать и получить объект хранения
 		*
@@ -204,8 +199,7 @@ class rm_duplicate_messages extends rcube_plugin
 			//for ($msg1_id; $msg1_id < count($lst_msg);) {
 			// читаем заголовки первого сообщения в массиве $lst_msg
 			//$msg1_uid = $lst_msg[$msg1_id]->uid;
-			$msg1_uid = $msg1_header->uid;
-
+			//$msg1_uid = $msg1_header->uid;
 			/// Разбираем первое сообщение. Начало
 			/**
 			* Получение заголовков сообщений и структуры тела с сервера и построение структуры объекта,
@@ -246,10 +240,10 @@ class rm_duplicate_messages extends rcube_plugin
 			*/
 			// в цикле разберём части сообщения и записываем в массив $msg1_parts каждую часть в свой ключ $part,
 			// если частей нет - PHP выдаёт предупреждение 'Invalid argument supplied for foreach()' - нет переменной $value
-			foreach ($msg1->structure->parts as $part => $msg1_part) {
-				// долго
-				$msg1_parts[$part] = $storage->get_message_part($msg1_uid, $part, null, null, null, false);
-			}
+//			foreach ($msg1->structure->parts as $part => $msg1_part) {
+//				// долго
+//				$msg1_parts[$part] = $storage->get_message_part($msg1_uid, $part, null, null, null, false);
+//			}
 
 			// удалим переменые
 			unset($part, $msg1_part);
@@ -277,10 +271,10 @@ class rm_duplicate_messages extends rcube_plugin
 
 				// в цикле разберём части сообщения и записываем в массив $msg2_parts каждую часть в свой ключ $part,
 				// если частей нет - PHP выдаёт предупреждение 'Invalid argument supplied for foreach()' - нет переменной $value
-				foreach ($msg2->structure->parts as $part => $msg2_part) {
-					// долго
-					$msg2_parts[$part] = $storage->get_message_part($msg2_uid, $part, null, null, null, false);
-				}
+//				foreach ($msg2->structure->parts as $part => $msg2_part) {
+//					// долго
+//					$msg2_parts[$part] = $storage->get_message_part($msg2_uid, $part, null, null, null, false);
+//				}
 
 				//  удалим переменые
 				unset($part, $msg2_part);
