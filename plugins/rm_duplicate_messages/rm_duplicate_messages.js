@@ -85,8 +85,8 @@ $(document).ready(function() {
 					if (rcmail.message_list) {
 						// просдушиватель событий срабатывает если сообщеение выделено
 						rcmail.message_list.addEventListener('select', function(list) {
-								// включаем командную кнопку если выделено хотябы одно сообщение в списке
-								rcmail.enable_command('plugin.btn_cmd_rm_dublecates', list.get_selection(false).length > 0);
+								// включаем командную кнопку если выделено больше одного сообщения в списке
+								rcmail.enable_command('plugin.btn_cmd_rm_dublecates', list.get_selection(false).length > 1);
 							});
 					}
 				});
