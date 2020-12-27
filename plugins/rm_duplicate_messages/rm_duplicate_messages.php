@@ -180,11 +180,7 @@ class rm_duplicate_messages extends rcube_plugin
 		* присвоим это значение переменной '$msg1_uid'.
 		*/
 		foreach ($uids[$folder] as $msg1_uid) {
-			//for ($msg1_id; $msg1_id < count($lst_msg);) {
-			// читаем заголовки первого сообщения в массиве $lst_msg
-			//$msg1_uid = $lst_msg[$msg1_id]->uid;
-			//$msg1_uid = $msg1_header->uid;
-			/// Разбираем первое сообщение. Начало
+			// Разбираем первое сообщение. Начало
 			/**
 			* Получение заголовков сообщений и структуры тела с сервера и построение структуры объекта,
 			* подобной той, которая создается PEAR::Mail_mimeDecode
@@ -226,10 +222,10 @@ class rm_duplicate_messages extends rcube_plugin
 			*/
 			// в цикле разберём части сообщения и записываем в массив $msg1_parts каждую часть в свой ключ $part,
 			// если частей нет - PHP выдаёт предупреждение 'Invalid argument supplied for foreach()' - нет переменной $value
-			////			//			foreach ($msg1->structure->parts as $part => $msg1_part) {
-			////			//				// долго
-			////			//				$msg1_parts[$part] = $storage->get_message_part($msg1_uid, $part, null, null, null, false);
-			////			//			}
+			foreach ($msg1->structure->parts as $part => $msg1_part) {
+				// долго
+				$msg1_parts[$part] = $storage->get_message_part($msg1_uid, $part, null, null, null, false);
+			}
 
 			// удалим переменые
 			unset($part, $msg1_part);
@@ -243,10 +239,7 @@ class rm_duplicate_messages extends rcube_plugin
 			*/
 			// переменная '$msg2_offset' содержит величину смещения
 			foreach (array_slice($uids[$folder], $msg2_offset) as $msg2_uid) {
-				// читаем заголовки первого сообщения в массиве $lst_msg
-				//$msg2_uid = $lst_msg[$msg2_offset]->uid;
-
-				/// Разбираем второе сообщение. Начало.
+				// Разбираем второе сообщение. Начало.
 				// получаем заголовки сообщения
 				$msg2 = $storage->get_message($msg2_uid, $folder);
 
@@ -255,39 +248,49 @@ class rm_duplicate_messages extends rcube_plugin
 					// увеличим счётчик второго сообщения
 					$msg2_offset++;
 					// очищаем массивы и переменные второго сообщения, функция unset()
-				unset($msg2, $msg2_uid);
+					unset($msg2, $msg2_uid);
 					// начнём цикл заново
 					continue;
 				}
 
 				// в цикле разберём части сообщения и записываем в массив $msg2_parts каждую часть в свой ключ $part,
 				// если частей нет - PHP выдаёт предупреждение 'Invalid argument supplied for foreach()' - нет переменной $value
-				////				//								foreach ($msg2->structure->parts as $part => $msg2_part) {
-				////				//									// долго
-				////				//									$msg2_parts[$part] = $storage->get_message_part($msg2_uid, $part, null, null, null, false);
-				////				//								}
+				foreach ($msg2->structure->parts as $part => $msg2_part) {
+					// долго
+					$msg2_parts[$part] = $storage->get_message_part($msg2_uid, $part, null, null, null, false);
+				}
 
 				//  удалим переменые
 				unset($part, $msg2_part);
 				/// Разбираем второе сообщение. Конец
 
-				// условие сверки сообщений
-				//     Тема сообщения
-				if ($lst_msg[$msg1_id]->subject === $lst_msg[$msg2_offset]->subject
+				/**
+				* Сравниваем сообщения:
+				* Функкция strcmp — Бинарно - безопасное сравнение строк с учетом регистра символов
+				* Функкция strcasecmp — Бинарно - безопасное сравнение строк без учета регистра символов
+				* Описание: strcmp(string $str1, string $str2):int
+				* Пример: $var1 = "Hello"; $var2 = "hello";
+				* 	if (strcmp($var1, $var2) == 0) {
+				* 	echo '$var1 равно $var2 при регистрозависимом сравнении';
+				* 	}
+				*/
+				// Тема сообщения
+				$e = strcmp($msg1->subject, $msg2->subject) == 0;
+				if (strcmp($msg1->subject, $msg2->subject) == 0
 					// Отправитель сообщения (От)
-					&& $lst_msg[$msg1_id]->from == $lst_msg[$msg2_offset]->from
+					&& $msg1->from == $msg2->from
 					// Получатель сообщения (Кому)
-					&& $lst_msg[$msg1_id]->to == $lst_msg[$msg2_offset]->to
+					&& strcasecmp($msg1->to == $msg2->to) == 0
 					// Дополнительные получатели сообщения (Копия)
-					&& $lst_msg[$msg1_id]->cc == $lst_msg[$msg2_offset]->cc
+					&& strcasecmp($msg1->cc == $msg2->cc) == 0
 					// Заголовок ответа на сообщение
-					&& $lst_msg[$msg1_id]->replyto === $lst_msg[$msg2_offset]->replyto
+					&& $msg1->replyto === $msg2->replyto
 					// Дата сообщения (Дата)
-					&& $lst_msg[$msg1_id]->date === $lst_msg[$msg2_offset]->date
+					&& strcasecmp($msg1->date === $msg2->date) == 0
 					// Отметка времени сообщения (на основе даты сообщения)
-					&& $lst_msg[$msg1_id]->timestamp === $lst_msg[$msg2_offset]->timestamp
+					&& $msg1->timestamp === $msg2->timestamp
 					// Заголовок сообщения In - Reply - To
-					&& $lst_msg[$msg1_id]->in_reply_to === $lst_msg[$msg2_offset]->in_reply_to
+					&& $msg1->in_reply_to === $msg2->in_reply_to
 					// Части сообщений
 					&& $msg1_parts === $msg2_parts
 				) {

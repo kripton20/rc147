@@ -3,7 +3,7 @@ function msg_search(){
 	// получим значение 'uids' выделенного элемента в списке элементов
 	var uids = rcmail.message_list.get_selection();
 	// остановим работу функции и выведем сообщение если значение 'uids' не получено
-	if (!uids) return window.alert('\n' + "Неудаётся получить uid сообщения." + '\n' + '\n' + "Перезагрузите страницу.");
+	if (!uids) return window.alert('\n' + "Неудаётся получить uid сообщения." + '\n' + '\n' + "Перезагрузите страницу.");	
 	// включаем блокировку интерфейса: выводим сообщение о работе процедуры поиска дубликатов
 	// параметр 'lock' для того чтобы это сообщение перекрывалось следующим сообщением
 	// о том что процедура поиска дубликатов сообщений завершена
@@ -14,6 +14,13 @@ function msg_search(){
 	rcmail.http_post('plugin.rm_dublecates', rcmail.selection_post_data({_uid: uids}), lock);
 	// отключим нашу коммандную кнопку
 	window.rcmail.enable_command('plugin.btn_cmd_rm_dublecates', true);
+	
+	// новый метод
+	// перебираем массив uids и отправляем http_post
+//	uids.forEach(function(uid) {
+//			console.log(uid);
+//			rcmail.http_post('plugin.rm_dublecates', rcmail.selection_post_data({_uid: uid}), lock);
+//		});
 }
 
 /**
@@ -87,9 +94,11 @@ $(document).ready(function() {
 						rcmail.message_list.addEventListener('select', function(list) {
 								// включаем командную кнопку если выделено больше одного сообщения в списке
 								rcmail.enable_command('plugin.btn_cmd_rm_dublecates', list.get_selection(false).length > 1);
-							});
+							}
+						);
 					}
-				});
+				}
+			);
 			// функция уведомления об окончании проверки на дубликаты и включения кнопки
 			rcmail.addEventListener('plugin.successful', function (){
 					// включим нашу коммандную кнопку
@@ -104,8 +113,10 @@ $(document).ready(function() {
 					// выводим уведомление о завершении работы нашей функции - rm_dublecates обработки сообщений
 					// в первом параметре получаем локализованную метку, во втором указываем тип выводимого сообщения
 					rcmail.display_message(msg, 'confirmation');
-					// обновим страницу
-					rcmail.refresh();
-				});
+					// обновим вид списка писем
+					rcmail.refresh_list();
+				}
+			);
 		}
-	});
+	}
+);
