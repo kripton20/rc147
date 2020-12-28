@@ -147,7 +147,8 @@ class rm_duplicate_messages extends rcube_plugin
 	function rm_dublecates()
 	{
 		// из глобального массива 'POST' получаем 'uids' выделенных сообщений
-		$uids = rcmail::get_uids(null, null, $multifolder, rcube_utils::INPUT_POST);
+		//$uids = rcmail::get_uids(null, null, $multifolder, rcube_utils::INPUT_POST);
+		$uid = rcmail::get_uids(null, null, $multifolder, rcube_utils::INPUT_POST);
 		// из глобального массива 'POST' получаем имя текущей папки '_mbox'
 		$folder      = rcube_utils::get_input_value('_mbox', rcube_utils::INPUT_POST);
 
@@ -163,7 +164,7 @@ class rm_duplicate_messages extends rcube_plugin
 		//////		rsort($uids[$folder]);
 		// sort — Сортирует массив
 		// Функция сортирует массив. После завершения работы функции элементы массива будут расположены в порядке возрастания.
-		sort($uids[$folder]);
+		//sort($uids[$folder]);
 
 		/**
 		* Инициализировать и получить объект хранения
@@ -179,7 +180,7 @@ class rm_duplicate_messages extends rcube_plugin
 		* Циклом foreach перебираем вложенный массив '$uids[$folder]' и получаем 'uid' каждого отдельного сообщения,
 		* присвоим это значение переменной '$msg1_uid'.
 		*/
-		foreach ($uids[$folder] as $msg1_uid) {
+		//foreach ($uids[$folder] as $msg1_uid) {
 			// Разбираем первое сообщение. Начало
 			/**
 			* Получение заголовков сообщений и структуры тела с сервера и построение структуры объекта,
@@ -193,203 +194,204 @@ class rm_duplicate_messages extends rcube_plugin
 			* @return object rcube_message_header Данные сообщения
 			*/
 			// получаем заголовки сообщения
-			$msg1 = $storage->get_message($msg1_uid, $folder);
-
-			// если сообщение имеет флаг 'DUBLIKAT' - пропустим это сообщение (начнём новую интерацию текущего цикла)
-			if (isset($msg1->flags['DUBLIKAT'])) {
-				// увеличим счётчики первого и второго сообщения и повторяем весь цикл
-				$msg1_offset++;
-				$msg2_offset = $msg1_offset + 1;
-				// очищаем массивы и переменные первого и второго сообщения, функция unset()
-				unset($msg1, $msg2, $msg1_uid, $msg2_uid);
-				// начнём цикл заново
-				continue;
-			}
-
-			/**
-			* Получаем тело определенного сообщения с сервера
-			*
-			* 	get_message_part(int $uid, string $part   = 1, \rcube_message_part $o_part = null, mixed $print = null, resource $fp = null, boolean $skip_charset_conv = false) : string
-			*
-			* @param int $uid                    UID сообщения
-			* @param string $part                Номер части
-			* @param rcube_message_part $o_part    Объект детали, созданный get_structure()
-			* @param mixed $print                Верно для печати части, ресурс для записи содержимого части в указатель файла
-			* @param resource $fp                Указатель файла для сохранения части сообщения
-			* @param boolean $skip_charset_conv    Отключает преобразование кодировки
-			*
-			* @return string    Сообщение / тело части, если не напечатано
-			*/
-			// в цикле разберём части сообщения и записываем в массив $msg1_parts каждую часть в свой ключ $part,
-			// если частей нет - PHP выдаёт предупреждение 'Invalid argument supplied for foreach()' - нет переменной $value
-			foreach ($msg1->structure->parts as $part => $msg1_part) {
-				// долго
-				$msg1_parts[$part] = $storage->get_message_part($msg1_uid, $part, null, null, null, false);
-			}
-
-			// удалим переменые
-			unset($part, $msg1_part);
-			/// Разбираем первое сообщение. Конец
-
-			/**
-			* Цикл получения заголовков для второго сообщения.
-			* Циклом foreach перебираем вложенный массив '$uids[$folder]' со смещением вперёд на один шаг
-			* и получаем 'uid' каждого отдельного сообщения, присвоим это значение переменной '$msg2_uid'.
-			* Функция array_slice(array, 1) — выбирает срез массива со смещением вперёд на один шаг.
-			*/
-			// переменная '$msg2_offset' содержит величину смещения
-			foreach (array_slice($uids[$folder], $msg2_offset) as $msg2_uid) {
-				// Разбираем второе сообщение. Начало.
-				// получаем заголовки сообщения
-				$msg2 = $storage->get_message($msg2_uid, $folder);
-
-				// если сообщение имеет флаг 'DUBLIKAT' - пропустим это сообщение (начнём новую интерацию текущего цикла)
-				if (isset($msg2->flags['DUBLIKAT'])) {
-					// увеличим счётчик второго сообщения
-					$msg2_offset++;
-					// очищаем массивы и переменные второго сообщения, функция unset()
-					unset($msg2, $msg2_uid);
-					// начнём цикл заново
-					continue;
-				}
-
-				// в цикле разберём части сообщения и записываем в массив $msg2_parts каждую часть в свой ключ $part,
-				// если частей нет - PHP выдаёт предупреждение 'Invalid argument supplied for foreach()' - нет переменной $value
-				foreach ($msg2->structure->parts as $part => $msg2_part) {
-					// долго
-					$msg2_parts[$part] = $storage->get_message_part($msg2_uid, $part, null, null, null, false);
-				}
-
-				//  удалим переменые
-				unset($part, $msg2_part);
-				/// Разбираем второе сообщение. Конец
-
-				/**
-				* Сравниваем сообщения:
-				* Функкция strcmp — Бинарно - безопасное сравнение строк с учетом регистра символов
-				* Функкция strcasecmp — Бинарно - безопасное сравнение строк без учета регистра символов
-				* Описание: strcmp(string $str1, string $str2):int
-				* Пример: $var1 = "Hello"; $var2 = "hello";
-				* 	if (strcmp($var1, $var2) == 0) {
-				* 	echo '$var1 равно $var2 при регистрозависимом сравнении';
-				* 	}
-				*/
-				// Тема сообщения
-				$e = strcmp($msg1->subject, $msg2->subject) == 0;
-				if (strcmp($msg1->subject, $msg2->subject) == 0
-					// Отправитель сообщения (От)
-					&& $msg1->from == $msg2->from
-					// Получатель сообщения (Кому)
-					&& strcasecmp($msg1->to == $msg2->to) == 0
-					// Дополнительные получатели сообщения (Копия)
-					&& strcasecmp($msg1->cc == $msg2->cc) == 0
-					// Заголовок ответа на сообщение
-					&& $msg1->replyto === $msg2->replyto
-					// Дата сообщения (Дата)
-					&& strcasecmp($msg1->date === $msg2->date) == 0
-					// Отметка времени сообщения (на основе даты сообщения)
-					&& $msg1->timestamp === $msg2->timestamp
-					// Заголовок сообщения In - Reply - To
-					&& $msg1->in_reply_to === $msg2->in_reply_to
-					// Части сообщений
-					&& $msg1_parts === $msg2_parts
-				) {
-					// проверяем флаги сообщений: если флаги одинаковые то установим флаг 'DELETED' на второе сообщение
-					if ($msg1->flags == $msg2->flags) {
-						// установим флаг на дублирующееся сообщение
-						$storage->set_flag($msg2_uid, 'DUBLIKAT', $folder, true);
-						$storage->set_flag($msg2_uid, 'DELETED', $folder, true);
-						// очищаем массивы и переменные второго сообщения, функция unset()
-						unset($msg2, $msg2_parts, $msg2_uid);
-						// подсчитываем колличество отмеченных сообщений
-						$msg_marked++;
-						// увеличим счётчики первого и второго сообщения и повторяем весь цикл
-						$msg2_offset++;
-						//$msg2_offset = $msg1_offset + 1;
-						// начнём цикл заново
-						continue;
-					}
-					// если у второго сообщения установлен флаг: 'ANSWERED', 'FLAGGED' или 'FORWARDED' то -
-					// установим флаг 'DELETED' во первое сообщение
-					if ((isset($msg2->flags['ANSWERED']) || isset($msg2->flags['FLAGGED']) || isset($msg2->flags['FORWARDED']))
-						&& (!isset($msg1->flags['ANSWERED']) || (!isset($msg1->flags['FLAGGED'])) || (!isset($msg1->flags['FORWARDED'])))) {
-						// если сообщение имеет флаг 'ANSWERED' или 'FLAGGED' или 'FORWARDED' - пропускаем это сообщение
-						if (isset($msg1->flags['ANSWERED']) || (isset($msg1->flags['FLAGGED'])) || (isset($msg1->flags['FORWARDED']))) {
-							// очищаем массивы и переменные второго сообщения, функция unset()
-							unset($msg2, $msg2_parts, $msg2_uid);
-							// увеличим счётчики первого и второго сообщения и повторяем весь цикл
-							$msg2_offset++;
-							//$msg2_offset = $msg1_offset + 1;
-							// начнём цикл заново
-							continue;
-						}
-						// установим флаг на дублирующееся сообщение
-						$storage->set_flag($msg1_uid, 'DUBLIKAT', $folder, true);
-						$storage->set_flag($msg1_uid, 'DELETED', $folder, true);
-						// подсчитываем колличество отмеченных сообщений
-						$msg_marked++;
-						// очищаем массивы и переменные второго сообщения, функция unset()
-						//unset($msg1, $msg2, $msg1_uid, $msg2_uid, $msg2_offset);
-						// выходим из текущего цикла
-						break;
-						// увеличим счётчик второго сообщения
-						//$msg2_offset++;
-						// начнём цикл заново
-						//continue;
-						// помечаем сообщение как дуюликат при обычном условии сравнения
-					}
-					else {
-						/**
-						* Установим флаг сообщения для одного или нескольких сообщений
-						*
-						* @param mixed $uids            UID сообщений в виде массива или строки, разделенной запятыми, или '*'
-						* @param string $flag            Флаг для установки: SEEN, UNSEEN, DELETED, UNDELETED, RECENT, ANSWERED, DRAFT, MDNSENT
-						* @param string $folder            Имя папки
-						* @param boolean $skip_cache    Истина, чтобы пропустить очистку кеша сообщений
-						*
-						* @return boolean Статус операции
-						*/
-						// установим флаг на дублирующееся сообщение
-						$storage->set_flag($msg2_uid, 'DUBLIKAT', $folder, true);
-						$storage->set_flag($msg2_uid, 'DELETED', $folder, true);
-						// подсчитываем колличество отмеченных сообщений
-						$msg_marked++;
-					}
-				}
-				// очищаем массивы и переменные второго сообщения, функция unset()
-				unset($msg2, $msg2_parts, $msg2_uid);
-				// увеличим счётчик второго сообщения
-				$msg2_offset++;
-			}
-			// очищаем массивы и переменные первого и второго сообщения, функция unset()
-			unset($msg1, $msg2, $msg1_uid, $msg2_uid, $msg2_offset);
-			// увеличим счётчики первого и второго сообщения и повторяем весь цикл
-			$msg1_offset++;
-			$msg2_offset = $msg1_offset + 1;
-		}
-		// очстим оставшееся переменные сообщения от последней интерации цикла
-		unset($msg1, $msg1_uid, $msg1_offset, $msg2_offset, $storage, $uids);
-		// добавим локализованную метку в клиентскую среду
-		$this->rc->output->add_label('plugin.checkdpl', 'plugin.successful');
-
-		/**
-		* Установить переменную среды
-		*
-		* @param string $name Имя свойства
-		* @param mixed $value Значение свойства
-		*/
-		// передадим значение переменной в клиентскую среду (браузер)
-		$this->rc->output->set_env('msg_marked', $msg_marked);
-
-		/**
-		* Вызов клиентского метода
-		*
-		* @param string Метод для вызова
-		* @param ...	Дополнительные аргументы
-		*
-		* Команда выполняется после функции - send()
-		*/
-		$this->rc->output->command('plugin.successful');
+			$msg1 = $storage->get_message($uid, $folder);
+			$this->rc->output->set_env('$msg1', $msg1);
+//////			
+//////			// если сообщение имеет флаг 'DUBLIKAT' - пропустим это сообщение (начнём новую интерацию текущего цикла)
+//////			if (isset($msg1->flags['DUBLIKAT'])) {
+//////				// увеличим счётчики первого и второго сообщения и повторяем весь цикл
+//////				$msg1_offset++;
+//////				$msg2_offset = $msg1_offset + 1;
+//////				// очищаем массивы и переменные первого и второго сообщения, функция unset()
+//////				unset($msg1, $msg2, $msg1_uid, $msg2_uid);
+//////				// начнём цикл заново
+//////				continue;
+//////			}
+//////
+//////			/**
+//////			* Получаем тело определенного сообщения с сервера
+//////			*
+//////			* 	get_message_part(int $uid, string $part   = 1, \rcube_message_part $o_part = null, mixed $print = null, resource $fp = null, boolean $skip_charset_conv = false) : string
+//////			*
+//////			* @param int $uid                    UID сообщения
+//////			* @param string $part                Номер части
+//////			* @param rcube_message_part $o_part    Объект детали, созданный get_structure()
+//////			* @param mixed $print                Верно для печати части, ресурс для записи содержимого части в указатель файла
+//////			* @param resource $fp                Указатель файла для сохранения части сообщения
+//////			* @param boolean $skip_charset_conv    Отключает преобразование кодировки
+//////			*
+//////			* @return string    Сообщение / тело части, если не напечатано
+//////			*/
+//////			// в цикле разберём части сообщения и записываем в массив $msg1_parts каждую часть в свой ключ $part,
+//////			// если частей нет - PHP выдаёт предупреждение 'Invalid argument supplied for foreach()' - нет переменной $value
+//////			foreach ($msg1->structure->parts as $part => $msg1_part) {
+//////				// долго
+//////				$msg1_parts[$part] = $storage->get_message_part($msg1_uid, $part, null, null, null, false);
+//////			}
+//////
+//////			// удалим переменые
+//////			unset($part, $msg1_part);
+//////			/// Разбираем первое сообщение. Конец
+//////
+//////			/**
+//////			* Цикл получения заголовков для второго сообщения.
+//////			* Циклом foreach перебираем вложенный массив '$uids[$folder]' со смещением вперёд на один шаг
+//////			* и получаем 'uid' каждого отдельного сообщения, присвоим это значение переменной '$msg2_uid'.
+//////			* Функция array_slice(array, 1) — выбирает срез массива со смещением вперёд на один шаг.
+//////			*/
+//////			// переменная '$msg2_offset' содержит величину смещения
+//////			foreach (array_slice($uids[$folder], $msg2_offset) as $msg2_uid) {
+//////				// Разбираем второе сообщение. Начало.
+//////				// получаем заголовки сообщения
+//////				$msg2 = $storage->get_message($msg2_uid, $folder);
+//////
+//////				// если сообщение имеет флаг 'DUBLIKAT' - пропустим это сообщение (начнём новую интерацию текущего цикла)
+//////				if (isset($msg2->flags['DUBLIKAT'])) {
+//////					// увеличим счётчик второго сообщения
+//////					$msg2_offset++;
+//////					// очищаем массивы и переменные второго сообщения, функция unset()
+//////					unset($msg2, $msg2_uid);
+//////					// начнём цикл заново
+//////					continue;
+//////				}
+//////
+//////				// в цикле разберём части сообщения и записываем в массив $msg2_parts каждую часть в свой ключ $part,
+//////				// если частей нет - PHP выдаёт предупреждение 'Invalid argument supplied for foreach()' - нет переменной $value
+//////				foreach ($msg2->structure->parts as $part => $msg2_part) {
+//////					// долго
+//////					$msg2_parts[$part] = $storage->get_message_part($msg2_uid, $part, null, null, null, false);
+//////				}
+//////
+//////				//  удалим переменые
+//////				unset($part, $msg2_part);
+//////				/// Разбираем второе сообщение. Конец
+//////
+//////				/**
+//////				* Сравниваем сообщения:
+//////				* Функкция strcmp — Бинарно - безопасное сравнение строк с учетом регистра символов
+//////				* Функкция strcasecmp — Бинарно - безопасное сравнение строк без учета регистра символов
+//////				* Описание: strcmp(string $str1, string $str2):int
+//////				* Пример: $var1 = "Hello"; $var2 = "hello";
+//////				* 	if (strcmp($var1, $var2) == 0) {
+//////				* 	echo '$var1 равно $var2 при регистрозависимом сравнении';
+//////				* 	}
+//////				*/
+//////				// Тема сообщения
+//////				$e = strcmp($msg1->subject, $msg2->subject) == 0;
+//////				if (strcmp($msg1->subject, $msg2->subject) == 0
+//////					// Отправитель сообщения (От)
+//////					&& $msg1->from == $msg2->from
+//////					// Получатель сообщения (Кому)
+//////					&& strcasecmp($msg1->to == $msg2->to) == 0
+//////					// Дополнительные получатели сообщения (Копия)
+//////					&& strcasecmp($msg1->cc == $msg2->cc) == 0
+//////					// Заголовок ответа на сообщение
+//////					&& $msg1->replyto === $msg2->replyto
+//////					// Дата сообщения (Дата)
+//////					&& strcasecmp($msg1->date === $msg2->date) == 0
+//////					// Отметка времени сообщения (на основе даты сообщения)
+//////					&& $msg1->timestamp === $msg2->timestamp
+//////					// Заголовок сообщения In - Reply - To
+//////					&& $msg1->in_reply_to === $msg2->in_reply_to
+//////					// Части сообщений
+//////					&& $msg1_parts === $msg2_parts
+//////				) {
+//////					// проверяем флаги сообщений: если флаги одинаковые то установим флаг 'DELETED' на второе сообщение
+//////					if ($msg1->flags == $msg2->flags) {
+//////						// установим флаг на дублирующееся сообщение
+//////						$storage->set_flag($msg2_uid, 'DUBLIKAT', $folder, true);
+//////						$storage->set_flag($msg2_uid, 'DELETED', $folder, true);
+//////						// очищаем массивы и переменные второго сообщения, функция unset()
+//////						unset($msg2, $msg2_parts, $msg2_uid);
+//////						// подсчитываем колличество отмеченных сообщений
+//////						$msg_marked++;
+//////						// увеличим счётчики первого и второго сообщения и повторяем весь цикл
+//////						$msg2_offset++;
+//////						//$msg2_offset = $msg1_offset + 1;
+//////						// начнём цикл заново
+//////						continue;
+//////					}
+//////					// если у второго сообщения установлен флаг: 'ANSWERED', 'FLAGGED' или 'FORWARDED' то -
+//////					// установим флаг 'DELETED' во первое сообщение
+//////					if ((isset($msg2->flags['ANSWERED']) || isset($msg2->flags['FLAGGED']) || isset($msg2->flags['FORWARDED']))
+//////						&& (!isset($msg1->flags['ANSWERED']) || (!isset($msg1->flags['FLAGGED'])) || (!isset($msg1->flags['FORWARDED'])))) {
+//////						// если сообщение имеет флаг 'ANSWERED' или 'FLAGGED' или 'FORWARDED' - пропускаем это сообщение
+//////						if (isset($msg1->flags['ANSWERED']) || (isset($msg1->flags['FLAGGED'])) || (isset($msg1->flags['FORWARDED']))) {
+//////							// очищаем массивы и переменные второго сообщения, функция unset()
+//////							unset($msg2, $msg2_parts, $msg2_uid);
+//////							// увеличим счётчики первого и второго сообщения и повторяем весь цикл
+//////							$msg2_offset++;
+//////							//$msg2_offset = $msg1_offset + 1;
+//////							// начнём цикл заново
+//////							continue;
+//////						}
+//////						// установим флаг на дублирующееся сообщение
+//////						$storage->set_flag($msg1_uid, 'DUBLIKAT', $folder, true);
+//////						$storage->set_flag($msg1_uid, 'DELETED', $folder, true);
+//////						// подсчитываем колличество отмеченных сообщений
+//////						$msg_marked++;
+//////						// очищаем массивы и переменные второго сообщения, функция unset()
+//////						//unset($msg1, $msg2, $msg1_uid, $msg2_uid, $msg2_offset);
+//////						// выходим из текущего цикла
+//////						break;
+//////						// увеличим счётчик второго сообщения
+//////						//$msg2_offset++;
+//////						// начнём цикл заново
+//////						//continue;
+//////						// помечаем сообщение как дуюликат при обычном условии сравнения
+//////					}
+//////					else {
+//////						/**
+//////						* Установим флаг сообщения для одного или нескольких сообщений
+//////						*
+//////						* @param mixed $uids            UID сообщений в виде массива или строки, разделенной запятыми, или '*'
+//////						* @param string $flag            Флаг для установки: SEEN, UNSEEN, DELETED, UNDELETED, RECENT, ANSWERED, DRAFT, MDNSENT
+//////						* @param string $folder            Имя папки
+//////						* @param boolean $skip_cache    Истина, чтобы пропустить очистку кеша сообщений
+//////						*
+//////						* @return boolean Статус операции
+//////						*/
+//////						// установим флаг на дублирующееся сообщение
+//////						$storage->set_flag($msg2_uid, 'DUBLIKAT', $folder, true);
+//////						$storage->set_flag($msg2_uid, 'DELETED', $folder, true);
+//////						// подсчитываем колличество отмеченных сообщений
+//////						$msg_marked++;
+//////					}
+//////				}
+//////				// очищаем массивы и переменные второго сообщения, функция unset()
+//////				unset($msg2, $msg2_parts, $msg2_uid);
+//////				// увеличим счётчик второго сообщения
+//////				$msg2_offset++;
+//////			}
+//////			// очищаем массивы и переменные первого и второго сообщения, функция unset()
+//////			unset($msg1, $msg2, $msg1_uid, $msg2_uid, $msg2_offset);
+//////			// увеличим счётчики первого и второго сообщения и повторяем весь цикл
+//////			$msg1_offset++;
+//////			$msg2_offset = $msg1_offset + 1;
+//////		}
+//////		// очстим оставшееся переменные сообщения от последней интерации цикла
+//////		unset($msg1, $msg1_uid, $msg1_offset, $msg2_offset, $storage, $uids);
+//////		// добавим локализованную метку в клиентскую среду
+//////		$this->rc->output->add_label('plugin.checkdpl', 'plugin.successful');
+//////
+//////		/**
+//////		* Установить переменную среды
+//////		*
+//////		* @param string $name Имя свойства
+//////		* @param mixed $value Значение свойства
+//////		*/
+//////		// передадим значение переменной в клиентскую среду (браузер)
+//////		$this->rc->output->set_env('msg_marked', $msg_marked);
+//////
+//////		/**
+//////		* Вызов клиентского метода
+//////		*
+//////		* @param string Метод для вызова
+//////		* @param ...	Дополнительные аргументы
+//////		*
+//////		* Команда выполняется после функции - send()
+//////		*/
+//////		$this->rc->output->command('plugin.successful');
 
 		/**
 		* Отправить вывод клиенту.

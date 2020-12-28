@@ -2,6 +2,8 @@
 function msg_search(){
 	// получим значение 'uids' выделенного элемента в списке элементов
 	var uids = rcmail.message_list.get_selection();
+	// метод сортирует содержимое массива
+	uids.sort();
 	// остановим работу функции и выведем сообщение если значение 'uids' не получено
 	if (!uids) return window.alert('\n' + "Неудаётся получить uid сообщения." + '\n' + '\n' + "Перезагрузите страницу.");	
 	// включаем блокировку интерфейса: выводим сообщение о работе процедуры поиска дубликатов
@@ -11,16 +13,19 @@ function msg_search(){
 	// запускаем PHP-функцию поиска дубликатов сообщений 'rm_dublecates':
 	// вызываем метод 'http_post' объекта 'rcmail' (параметры через запятую)
 	// метод 'selection_post_data()' отправляет данные на сервер в массив [_POST]
-	rcmail.http_post('plugin.rm_dublecates', rcmail.selection_post_data({_uid: uids}), lock);
+	
+	//rcmail.http_post('plugin.rm_dublecates', rcmail.selection_post_data({_uid: uids}), lock);
 	// отключим нашу коммандную кнопку
 	window.rcmail.enable_command('plugin.btn_cmd_rm_dublecates', true);
 	
 	// новый метод
 	// перебираем массив uids и отправляем http_post
-//	uids.forEach(function(uid) {
-//			console.log(uid);
-//			rcmail.http_post('plugin.rm_dublecates', rcmail.selection_post_data({_uid: uid}), lock);
-//		});
+	uids.forEach(function(uid) {
+			console.log(uid);
+			rcmail.http_post('plugin.rm_dublecates', rcmail.selection_post_data({_uid: uid}), lock);
+			var msg1 = rcmail.env.msg1;
+			var stop1=1;
+		});
 }
 
 /**
