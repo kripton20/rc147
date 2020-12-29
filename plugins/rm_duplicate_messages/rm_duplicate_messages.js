@@ -5,7 +5,9 @@ function msg_search(){
 	// метод сортирует содержимое массива
 	uids.sort();
 	// остановим работу функции и выведем сообщение если значение 'uids' не получено
-	if (!uids) return window.alert('\n' + "Неудаётся получить uid сообщения." + '\n' + '\n' + "Перезагрузите страницу.");	
+	if (!uids) return window.alert('\n' + "Неудаётся получить uid сообщения." + '\n' + '\n' + "Перезагрузите страницу.");
+	// отключим нашу коммандную кнопку
+	window.rcmail.enable_command('plugin.btn_cmd_rm_dublecates', true);
 	// включаем блокировку интерфейса: выводим сообщение о работе процедуры поиска дубликатов
 	// параметр 'lock' для того чтобы это сообщение перекрывалось следующим сообщением
 	// о том что процедура поиска дубликатов сообщений завершена
@@ -13,20 +15,29 @@ function msg_search(){
 	// запускаем PHP-функцию поиска дубликатов сообщений 'rm_dublecates':
 	// вызываем метод 'http_post' объекта 'rcmail' (параметры через запятую)
 	// метод 'selection_post_data()' отправляет данные на сервер в массив [_POST]
-	
-	//rcmail.http_post('plugin.rm_dublecates', rcmail.selection_post_data({_uid: uids}), lock);
-	// отключим нашу коммандную кнопку
-	window.rcmail.enable_command('plugin.btn_cmd_rm_dublecates', true);
-	
+	rcmail.http_post('plugin.rm_dublecates', rcmail.selection_post_data({_uid: uids}), lock);
+
+
+
+}
+
+function msgs(){
+	var msgs = rcmail.env.msgs;
+  //var u = msgs.2590;
 	// новый метод
 	// перебираем массив uids и отправляем http_post
-	uids.forEach(function(uid) {
-			console.log(uid);
-			rcmail.http_post('plugin.rm_dublecates', rcmail.selection_post_data({_uid: uid}), lock);
-			var msg1 = rcmail.env.msg1;
-			var stop1=1;
+	var lock = rcmail.set_busy(true, 'rm_duplicate_messages.checkdpl');
+	let fruit = ["Банан", "Кокос", "Мандарин"];
+
+	fruit.forEach(function(item, i, fruit) {
+			console.log( i + ": " + item);
+		});
+	msgs.forEach(function(item, i, msgs) {
+			console.log( i + ": " + item);
+			//rcmail.http_post('plugin.rm_dublecates', rcmail.selection_post_data({_uid: uid}), lock);
 		});
 }
+
 
 /**
 * Запросы и обратные вызовы Ajax
@@ -104,13 +115,36 @@ $(document).ready(function() {
 					}
 				}
 			);
+			// функция принимает от сервера список сообщений
+			rcmail.addEventListener('plugin.get_in_msg', function (){
+					msgs();
+					// включим нашу коммандную кнопку
+					//window.rcmail.enable_command('plugin.btn_cmd_rm_dublecates', true);
+					// получим значение переменной от сервера
+					// поместим в переменную msg_marked колличество отмеченных сообщений
+					//					var //$msgs = rcmail.env.$msgs,
+					//					$msgs = rcmail.env.$msgs;
+					// msg_marked = rcmail.env.msg_marked,
+					//					// получим локализованные метки
+					//					msg_successful = rcmail.get_label('rm_duplicate_messages.successful'),
+					//					// в переменную msg поместим полное сообщение которое нужно вывести
+					//					msg = msg_successful + msg_marked;
+					//					// выводим уведомление о завершении работы нашей функции - rm_dublecates обработки сообщений
+					//					// в первом параметре получаем локализованную метку, во втором указываем тип выводимого сообщения
+					//					rcmail.display_message(msg, 'confirmation');
+					//					// обновим вид списка писем
+					//					rcmail.refresh_list();
+				}
+			);
 			// функция уведомления об окончании проверки на дубликаты и включения кнопки
 			rcmail.addEventListener('plugin.successful', function (){
 					// включим нашу коммандную кнопку
 					window.rcmail.enable_command('plugin.btn_cmd_rm_dublecates', true);
 					// получим значение переменной от сервера
 					// поместим в переменную msg_marked колличество отмеченных сообщений
-					var msg_marked = rcmail.env.msg_marked,
+					var //msg1 = rcmail.env.$msg1,
+					//msg2 = rcmail.env.$msg2,
+					msg_marked = rcmail.env.msg_marked,
 					// получим локализованные метки
 					msg_successful = rcmail.get_label('rm_duplicate_messages.successful'),
 					// в переменную msg поместим полное сообщение которое нужно вывести

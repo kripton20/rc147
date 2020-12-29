@@ -148,15 +148,15 @@ class rm_duplicate_messages extends rcube_plugin
 	{
 		// из глобального массива 'POST' получаем 'uids' выделенных сообщений
 		//$uids = rcmail::get_uids(null, null, $multifolder, rcube_utils::INPUT_POST);
-		$uid = rcmail::get_uids(null, null, $multifolder, rcube_utils::INPUT_POST);
+		$uids = rcmail::get_uids(null, null, $multifolder, rcube_utils::INPUT_POST);
 		// из глобального массива 'POST' получаем имя текущей папки '_mbox'
 		$folder      = rcube_utils::get_input_value('_mbox', rcube_utils::INPUT_POST);
 
 		// переменные $msg1_id и $msg2_offset номера первого и второго сообщения в массиве $lst_msg
-		$msg1_offset = 0;
-		$msg2_offset = 1;
+		//$msg1_offset = 0;
+		//$msg2_offset = 1;
 		// колличество отмеченных сообщений
-		$msg_marked  = 0;
+		//$msg_marked  = 0;
 		// удалим переменые
 		unset($multifolder);
 		//////		// отсортируем массив - старые письма сверху, новые снизу
@@ -194,8 +194,31 @@ class rm_duplicate_messages extends rcube_plugin
 			* @return object rcube_message_header Данные сообщения
 			*/
 			// получаем заголовки сообщения
-			$msg1 = $storage->get_message($uid, $folder);
-			$this->rc->output->set_env('$msg1', $msg1);
+			//$msg_aray = $storage->get_message(2590, $folder);
+			//$msg2 = $storage->get_message(2591, $folder);
+			foreach ($uids[$folder] as $uid) {
+				//$msgs[$uid] = $storage->get_message($uid, $folder);
+        $msgs[$uid] = $storage->get_message_headers($uid, $folder);
+			}
+			
+			$this->rc->output->set_env('msgs', $msgs);
+			
+					/**
+		* Вызов клиентского метода
+		*
+		* @param string Метод для вызова
+		* @param ...	Дополнительные аргументы
+		*
+		* Команда выполняется после функции - send()
+		*/
+		//$this->rc->output->command('plugin.successful');
+		$this->rc->output->command('plugin.get_in_msg');
+
+		/**
+		* Отправить вывод клиенту.
+		* Функция отправки вывода клиенту, после этого работа PHP-скрипта заканчивается
+		*/
+		$this->rc->output->send();
 //////			
 //////			// если сообщение имеет флаг 'DUBLIKAT' - пропустим это сообщение (начнём новую интерацию текущего цикла)
 //////			if (isset($msg1->flags['DUBLIKAT'])) {
@@ -383,21 +406,7 @@ class rm_duplicate_messages extends rcube_plugin
 //////		// передадим значение переменной в клиентскую среду (браузер)
 //////		$this->rc->output->set_env('msg_marked', $msg_marked);
 //////
-//////		/**
-//////		* Вызов клиентского метода
-//////		*
-//////		* @param string Метод для вызова
-//////		* @param ...	Дополнительные аргументы
-//////		*
-//////		* Команда выполняется после функции - send()
-//////		*/
-//////		$this->rc->output->command('plugin.successful');
 
-		/**
-		* Отправить вывод клиенту.
-		* Функция отправки вывода клиенту, после этого работа PHP-скрипта заканчивается
-		*/
-		$this->rc->output->send();
 	}
 
 	// вставим название нашей секции. Вставим свою секцию с нашим плагином
