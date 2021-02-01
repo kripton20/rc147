@@ -391,6 +391,7 @@ class rm_duplicate_messages extends rcube_plugin
         */
         // передадим значение переменной в клиентскую среду (браузер)
         $this->rc->output->set_env('msgs', $msgs[$msg_uid]);
+        //$this->rc->output->set_env('msgs_parts', $msgs_parts[$part]);
 
         // очстим оставшееся переменные сообщения от последней интерации цикла
         //unset($msg_marked, $folder);
@@ -401,15 +402,17 @@ class rm_duplicate_messages extends rcube_plugin
         /**
         * Вызов клиентского метода
         *
-        * @param string		Метод для вызова
-        * @param string		Дополнительные аргументы
+        * @param string Метод для вызова
+        * @param ...    Дополнительные аргументы
         *
         * Команда выполняется после функции - send()
         */
         $this->rc->output->command('plugin.successful');
 
-        // Функция отправки вывода клиенту, после этого работа PHP-скрипта заканчивается.
-        // Отправим данные в клиентскую часть (браузеру).
+        /**
+        * Отправить вывод клиенту.
+        * Функция отправки вывода клиенту, после этого работа PHP-скрипта заканчивается
+        */
         $this->rc->output->send();
     }
 
