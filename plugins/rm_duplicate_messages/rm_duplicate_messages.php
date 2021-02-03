@@ -204,6 +204,40 @@ class rm_duplicate_messages extends rcube_plugin
 // json_encode — Возвращает JSON - представление данных.
 $msgs_json = json_encode($msgs);
 
+/**
+* Пример #2 Пример удаления cookie посредством setcookie()
+* Чтобы удалить cookie достаточно в качестве срока действия указать какое-либо время
+* в прошлом. Это запустит механизм браузера, удаляющий истёкшие cookie.
+* В примерах ниже показано, как удалить cookie, заданные в предыдущих примерах: 
+*/
+// установка даты истечения срока действия на час назад
+//setcookie('TestCookie0', '', time() -3600);
+//setcookie('TestCookie', "", time() -3600, "/~rasmus/", "example.com", 1);
+
+// Вывести одно конкретное значение cookie
+//$cook0 = $_COOKIE['test_cookie0'];
+//$cook1 = $_COOKIE['test_cookie1'];
+//$cook2 = $_COOKIE['test_cookie2'];
+//
+//$cook0u = $_COOKIE['testu_cookie0'];
+//$cook1u = $_COOKIE['testu_cookie1'];
+//$cook2u = $_COOKIE['testu_cookie2'];
+//
+//$value0 = 'кука 0';
+//$value1 = 'кука 1';
+//$value2 = 'кука 2';
+//
+//setcookie('test_cookie0', $value0);
+//setcookie('test_cookie1', $msgs_json, time()+60);  /* срок действия 1 час */
+//setcookie('test_cookie2', $msgs_json, time()+60, '/~rasmus123/', 'example.com', 1);
+//
+//rcube_utils::setcookie('testu_cookie0', $value0);
+//rcube_utils::setcookie('testu_cookie1', $msgs_json, time() +60);
+//rcube_utils::setcookie('testu_cookie2', $msgs_json, time()+3600, '/~rasmus124/', 'example.com', 1);
+
+
+
+
         /**
         * Установить переменную среды
         *

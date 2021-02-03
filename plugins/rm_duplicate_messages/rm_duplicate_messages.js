@@ -3,8 +3,7 @@ function msg_request() {
     // Получим значение 'uids' выделенного элемента в списке элементов.
     var uids = rcmail.message_list.get_selection();
     // Остановим работу функции и выведем сообщение если значение 'uids' не получено.
-    if (!uids)
-    return window.alert('\n' + "Неудаётся получить uid сообщения." + '\n' + '\n' + "Перезагрузите страницу.");
+    if (!uids) return window.alert('\n' + "Неудаётся получить uid сообщения." + '\n' + '\n' + "Перезагрузите страницу.");
     // Включаем блокировку интерфейса: выводим сообщение о работе процедуры запросы писем из базы.
     // Параметр 'lock' для того чтобы это сообщение перекрывалось следующим сообщением
     // о том что процедура запроса сообщений завершена.
@@ -17,7 +16,6 @@ function msg_request() {
     // Отключаем нашу коммандную кнопку.
     window.rcmail.enable_command('plugin.btn_cmd_msg_request', false);
 }
-
 
 // функция поиска дубликатов сообщений в переданном массиве. Функция разбора массива.
 function msg_compare(){
@@ -85,6 +83,7 @@ $(document).ready(function() {
                     if (window.localStorage) {
                         // Запишем текущие значения наших переменных в хранилище.
                         localStorage.msgs_json = msgs_json;
+                        sessionStorage.msgs_json = msgs_json;
                     }
                     // обновим вид списка писем
                     rcmail.refresh_list();
@@ -93,9 +92,9 @@ $(document).ready(function() {
                 }
             );
 
-rcmail.addEventListener('refreshing', function () {
-	window.alert(refreshing);
-});
+            rcmail.addEventListener('refreshing', function () {
+                    window.alert(refreshing);
+                });
 
             // функция уведомления об окончании проверки на дубликаты и включения кнопки
             rcmail.addEventListener('plugin.successful', function () {
