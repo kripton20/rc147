@@ -1,7 +1,11 @@
 // функция запроса сообщений из базы.
 function msg_request() {
     // Получим значение 'uids' выделенного элемента в списке элементов.
-    var uids = rcmail.message_list.get_selection();
+    //var uids = rcmail.message_list.get_selection();
+    var uids = rcmail.message_list.selection;
+    // Весь список писем.
+    //var uids = rcmail.message_list.rows;
+    
     // Остановим работу функции и выведем сообщение если значение 'uids' не получено.
     if (!uids) return window.alert('\n' + "Неудаётся получить uid сообщения." + '\n' + '\n' + "Перезагрузите страницу.");
     // Включаем блокировку интерфейса: выводим сообщение о работе процедуры запросы писем из базы.
@@ -16,7 +20,23 @@ function msg_request() {
     // Отключаем нашу коммандную кнопку.
     window.rcmail.enable_command('plugin.btn_cmd_msg_request', false);
 }
-
+// Отправка команды на сервер для фоновой обработки писем.
+function msg_handle(){	
+    // Получим содержимое по заданному адресу URL с помощью XMLHttpRequest.
+    var req = new XMLHttpRequest(); // Создадим новый запрос.
+    // Полyчим содержимое по заданномy адресy URL с помощью XMLHttpRequest.
+    // Метод XMLHttpRequest.open() инициализирует новый запрос или повторно инициализирует уже созданный.
+    // Синтаксис:     XMLHttpRequest.open('method', url[, async[, user[, password]]]).
+    // Передаваемые параметры: ?param1=value1&param2=value2&param3=value3
+    req.open('GET', 'http://localhost/rc147/plugins/rm_duplicate_messages/msg_handle.php');	// Откроем запрос.
+    // Метод XMLHttpRequest.send() отправляет запрос.
+    // Если запрос асинхронный (каким он является по-умолчанию), то возврат из данного метода происходит
+    // сразу после отправления запроса. Если запрос синхронный, то метод возвращает управление только после получения ответа.
+    // Метод send() принимает необязательные аргументы в тело запросов. Если метод запроса GET или HEAD,
+    // то аргументы игнорируются и тело запроса устанавливается в null.
+    // После отправки в консоле появляются заголовки.
+    req.send(null);	// Отправим запрос.
+}
 // функция поиска дубликатов сообщений в переданном массиве. Функция разбора массива.
 function msg_compare(){
     var msgs=JSON.parse(localStorage.msgs_json);
@@ -60,6 +80,7 @@ $(document).ready(function() {
                         rcmail.message_list.addEventListener('select', function(list) {
                                 // включаем командную кнопку если выделено больше одного сообщения в списке
                                 rcmail.enable_command('plugin.btn_cmd_msg_request', list.get_selection(false).length > 1);
+                                localStorage.uids=list.selection;
                             }
                         );
                     }

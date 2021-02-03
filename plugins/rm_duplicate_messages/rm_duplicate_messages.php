@@ -18,13 +18,49 @@ class rm_duplicate_messages extends rcube_plugin
         *
         * @return rcmail Единственный и неповторимый экземпляр
         */
-        // переменная $this относится к текущему классу и представляет собой неявный объект.
+        // Переменная $this относится к текущему классу и представляет собой неявный объект.
         // rc - свойство этого объекта. Запишем туда системные настройки приложения.
         $this->rc = rcmail::get_instance();
         // переменной $tsk присвоим имя текущей задачи приложения
         //$tsk = $this->rc->task;
         // если задача 'mail' и действие '' или 'list', покажем нашу кнопку на панели, в других случаях не показываем
         if ($this->rc->task == 'mail' && ($this->rc->action == '' || $this->rc->action == 'list')) {
+            /**
+            * Регистрируем хуки сервера
+            * Способ работы хуков плагинов заключается в том, что в разное время, пока Roundcube обрабатывает, он проверяет,
+            * есть-ли у каких-либо плагинов зарегистрированные функции для запуска в это время, и если да, то функции запускаются
+            * (путем выполнения «ловушки»). Эти функции могут изменять или расширять поведение Roundcube по умолчанию.
+            * Регистрация хуков:     $this->add_hook('hook_name', $callback_function);
+            * где второй аргумент – это обратный вызов PHP (функция в этом файле ниже), который может ссылаться на простую функцию или метод
+            * объекта. Зарегистрированная функция получает один хеш-массив в качестве аргумента, который содержит определенные данные текущего
+            * контекста в зависимости от ловушки.
+            * См. «Перехватчики подключаемых модулей» для получения полного описания всех перехватчиков и их полей аргументов.
+            * Аргумент var может быть изменен функцией обратного вызова и может (даже частично) быть возвращен приложению.
+            */
+            /**
+            * preferences_save
+            * Позволяет плагину вводить данные в массив настроек, которые будут сохранены
+            * Аргументы:
+            * @param prefs: Хеш-массив с сохраняемыми prefs
+            * Возвращаемые значения:
+            * @return result: логический
+            * @return abort: логическое
+            * @return prefs: массив
+            */
+            $this->add_hook('preferences_save', array($this,'save_settings1'));
+            /**
+            * preferences_update
+            * В отличие от хука preferences_save, он запускается всякий раз, когда пользовательские настрой-ки обновляются. И это не ограничивается разделом настроек, но также может выполняться другим плагином.
+            * Аргументы:
+            * @param prefs: хеш-массив с префиксом, который нужно обновить
+            * @param old: массив хешей с текущими сохраненными пользовательскими настройками
+            * @param userid: ID пользователя, для которого сохраняются эти настройки.
+            * Возвращаемые значения:
+            * @return prefs: массив
+            * @return old: массив
+            * @return abort: логическое
+            */
+            $this->add_hook('preferences_update', array($this,'update_settings1'));
             /**
             * Загрузка локализованных текстов из каталога обрабатываемого плагина.
             *
@@ -103,30 +139,66 @@ class rm_duplicate_messages extends rcube_plugin
             * Пример: $this->register_action('$action', $callback'));
             *         $this->register_action('$action',  array($this,'function'));
             */
+            //$this->register_action('plugin.msg_request', array($this,'msg_request'));
             $this->register_action('plugin.msg_request', array($this,'msg_request'));
         }
         // когда наша функция запускается - страница обновляется, функцию обратного вызова требуется зарегистрировать еще раз
         elseif ($this->rc->action == 'plugin.msg_request') {
             $this->register_action('plugin.msg_request', array($this,'msg_request'));
+            $this->add_hook('preferences_save', array($this,'save_settings1'));
         }
     }
 
-    // Функция запрашивает очередное сообщение из базы и передаёт в клиентскую часть.
-    function msg_request()
+    // Функция получает список uids из массива $_POST и сохранияет конфигурацию.
+    function save_settings1($args)
     {
         // из глобального массива 'POST' получаем 'uids' выделенных сообщений
         $uids = rcmail::get_uids(null, null, $multifolder, rcube_utils::INPUT_POST);
         // из глобального массива 'POST' получаем имя текущей папки '_mbox'
         $folder = rcube_utils::get_input_value('_mbox', rcube_utils::INPUT_POST);
 
+        $days   = $_POST['_deleteold'];
+        $args['prefs']['g_delete_old3'] = 'my_var1';
+        //$when = $_POST['_whenauto'];
+        $args['prefs']['whenauto3'] = 'my_var2';
+
+        return $args;
+    }
+
+    function update_settings1 ($args)
+    {
+        $days = $_POST['_deleteold'];
+        $args['prefs']['g_delete_old3'] = $days;
+        $when = $_POST['_whenauto'];
+        $args['prefs']['whenauto3'] = $when;
+
+        return $args;
+    }
+
+    // Функция запрашивает очередное сообщение из базы и передаёт в клиентскую часть.
+    function msg_request()
+    {
+
+
+        $this->rc->plugins->exec_hook('preferences_save', array(
+                'section'=> 'deloldg1',
+                'prefs'         => array(
+                    'my_s1'=>'my_s1',
+                    'my_s2'=>'my_s2')
+            ));
+        $args['prefs']['g11_delete_old'] = "my_name";
+        $this->rc->plugins->exec_hook('preferences_save', $args);
+
+        $plugin = rcmail::get_instance()->plugins->exec_hook('preferences_save',
+            array('prefs'  => 'a_user_prefs','section'=> 'CURR_SECTION'));
+
+
         /**
-        * Инициализировать и получить объект хранения
+        * Инициализация и получение объекта хранения писем
         *
-        *     get_storage()
-        *
-        * @return rcube_storage Storage Объект хранения
+        * @return rcube_storage Storage        Объект хранения
         */
-        $storage= $this->rc->get_storage();
+        $storage = $this->rc->get_storage();
 
         /**
         * Цикл получения заголовков сообщения по текущему 'uid'.
@@ -201,39 +273,39 @@ class rm_duplicate_messages extends rcube_plugin
         //unset($msg_headers, $msg_uid, $msg_offset, $msg2_offset, $storage, $uids);
         //unset($msg_headers, $msg_parts);
 
-// json_encode — Возвращает JSON - представление данных.
-$msgs_json = json_encode($msgs);
+        // json_encode — Возвращает JSON - представление данных.
+        $msgs_json = json_encode($msgs);
 
-/**
-* Пример #2 Пример удаления cookie посредством setcookie()
-* Чтобы удалить cookie достаточно в качестве срока действия указать какое-либо время
-* в прошлом. Это запустит механизм браузера, удаляющий истёкшие cookie.
-* В примерах ниже показано, как удалить cookie, заданные в предыдущих примерах: 
-*/
-// установка даты истечения срока действия на час назад
-//setcookie('TestCookie0', '', time() -3600);
-//setcookie('TestCookie', "", time() -3600, "/~rasmus/", "example.com", 1);
+        /**
+        * Пример #2 Пример удаления cookie посредством setcookie()
+        * Чтобы удалить cookie достаточно в качестве срока действия указать какое-либо время
+        * в прошлом. Это запустит механизм браузера, удаляющий истёкшие cookie.
+        * В примерах ниже показано, как удалить cookie, заданные в предыдущих примерах:
+        */
+        // установка даты истечения срока действия на час назад
+        //setcookie('TestCookie0', '', time() - 3600);
+        //setcookie('TestCookie', "", time() - 3600, " / ~rasmus / ", "example.com", 1);
 
-// Вывести одно конкретное значение cookie
-//$cook0 = $_COOKIE['test_cookie0'];
-//$cook1 = $_COOKIE['test_cookie1'];
-//$cook2 = $_COOKIE['test_cookie2'];
-//
-//$cook0u = $_COOKIE['testu_cookie0'];
-//$cook1u = $_COOKIE['testu_cookie1'];
-//$cook2u = $_COOKIE['testu_cookie2'];
-//
-//$value0 = 'кука 0';
-//$value1 = 'кука 1';
-//$value2 = 'кука 2';
-//
-//setcookie('test_cookie0', $value0);
-//setcookie('test_cookie1', $msgs_json, time()+60);  /* срок действия 1 час */
-//setcookie('test_cookie2', $msgs_json, time()+60, '/~rasmus123/', 'example.com', 1);
-//
-//rcube_utils::setcookie('testu_cookie0', $value0);
-//rcube_utils::setcookie('testu_cookie1', $msgs_json, time() +60);
-//rcube_utils::setcookie('testu_cookie2', $msgs_json, time()+3600, '/~rasmus124/', 'example.com', 1);
+        // Вывести одно конкретное значение cookie
+        //$cook0 = $_COOKIE['test_cookie0'];
+        //$cook1 = $_COOKIE['test_cookie1'];
+        //$cook2 = $_COOKIE['test_cookie2'];
+        //
+        //$cook0u = $_COOKIE['testu_cookie0'];
+        //$cook1u = $_COOKIE['testu_cookie1'];
+        //$cook2u = $_COOKIE['testu_cookie2'];
+        //
+        //$value0 = 'кука 0';
+        //$value1 = 'кука 1';
+        //$value2 = 'кука 2';
+        //
+        //setcookie('test_cookie0', $uids);
+        //setcookie('test_cookie1', $uids, time() + 60);  /* срок действия 1 час */
+        //setcookie('test_cookie2', $uids, time() + 60, ' / ~rasmus123 / ', 'example.com', 1);
+        //
+        //rcube_utils::setcookie('testu_cookie0', $uids);
+        //rcube_utils::setcookie('testu_cookie1', $uids, time() + 60);
+        //rcube_utils::setcookie('testu_cookie2', $uids, time() + 60, ' / ~rasmus124 / ', 'example.com', 1);
 
 
 
