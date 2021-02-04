@@ -1,9 +1,11 @@
 // функция запроса сообщений из базы.
 function msg_request() {
-	
-	
     // Получим значение 'uids' выделенного элемента в списке элементов.
-    var uids = localStorage.uids //rcmail.message_list.get_selection();
+    //var uids = rcmail.message_list.get_selection();
+    var uids = rcmail.message_list.selection;
+    // Весь список писем.
+    //var uids = rcmail.message_list.rows;
+    
     // Остановим работу функции и выведем сообщение если значение 'uids' не получено.
     if (!uids) return window.alert('\n' + "Неудаётся получить uid сообщения." + '\n' + '\n' + "Перезагрузите страницу.");
     // Включаем блокировку интерфейса: выводим сообщение о работе процедуры запросы писем из базы.
