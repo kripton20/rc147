@@ -18,7 +18,7 @@ function msg_request() {
     // там содержатся идентификаторы сообщений.
     rcmail.http_post('plugin.msg_request', rcmail.selection_post_data({_uid: uids}), lock);
     // Отключаем нашу коммандную кнопку.
-    window.rcmail.enable_command('plugin.btn_cmd_msg_request', false);
+    //window.rcmail.enable_command('plugin.btn_cmd_msg_request', false);
 }
 // Отправка команды на сервер для фоновой обработки писем.
 function msg_handle(){	
