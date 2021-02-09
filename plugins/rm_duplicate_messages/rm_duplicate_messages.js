@@ -15,9 +15,8 @@ function msg_request() {
     // Передаём запрос на сервер выполнить PHP-функцию запроса сообщений - 'msg_request':
     // вызываем метод 'http_post' объекта 'rcmail' (параметры через запятую),
     // метод 'selection_post_data()' отправляет данные на сервер в массив [_POST] -
-    // там содержатся идентификаторы сообщений.
+    // там содержатся идентификаторы сообщений. _metka: msg_request
     rcmail.http_post('plugin.msg_request', rcmail.selection_post_data({_uid: uids}), lock);
-        //rcmail.http_post('save-prefs', rcmail.selection_post_data({_uid: uids}), lock);
     // Отключаем нашу коммандную кнопку.
     //window.rcmail.enable_command('plugin.btn_cmd_msg_request', false);
 }
