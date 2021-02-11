@@ -3,6 +3,7 @@ function msg_request() {
     // Получим значение 'uids' выделенного элемента в списке элементов.
     //var uids = rcmail.message_list.get_selection();
     var uids = rcmail.message_list.selection;
+    
     // Весь список писем.
     //var uids = rcmail.message_list.rows;
     
@@ -17,7 +18,7 @@ function msg_request() {
     // метод 'selection_post_data()' отправляет данные на сервер в массив [_POST] -
     // там содержатся идентификаторы сообщений.
     rcmail.http_post('plugin.msg_request', rcmail.selection_post_data({_uid: uids}), lock);
-        //rcmail.http_post('save-prefs', rcmail.selection_post_data({_uid: uids}), lock);
+    
     // Отключаем нашу коммандную кнопку.
     //window.rcmail.enable_command('plugin.btn_cmd_msg_request', false);
 }
