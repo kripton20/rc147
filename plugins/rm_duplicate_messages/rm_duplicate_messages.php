@@ -51,7 +51,7 @@ class rm_duplicate_messages extends rcube_plugin
             // Если зарегистрировать хук здесь - то он будет работать при срабатывании
             // функции 'init' (при каждой перезагрузке страницы) с учетом значений 'task' и 'action'.
             // Срабатывание функции 'save_settings' при каждой перезагрузке страницы не требуется.
-            $this->add_hook('preferences_save', array($this,'save_settings'));
+            //$this->add_hook('preferences_save', array($this,'save_settings'));
             /**
             * preferences_update
             * В отличие от хука preferences_save, он запускается всякий раз, когда пользовательские настрой-ки обновляются. И это не ограничивается разделом настроек, но также может выполняться другим плагином.
@@ -65,7 +65,7 @@ class rm_duplicate_messages extends rcube_plugin
             * @return abort: логическое
             */
             // Срабатывание функции 'update_settings' требуется при каждой перезагрузке страницы,
-            // поэтому зарегистрируем хук с этой функцией здесь.
+            // поэтому зарегистрируем хук с этой функцией в функции 'init', при вышеуказанном условии.
             $this->add_hook('preferences_update', array($this,'update_settings'));
             /**
             * Загрузка локализованных текстов из каталога обрабатываемого плагина.
@@ -147,38 +147,38 @@ class rm_duplicate_messages extends rcube_plugin
             */
             //$this->register_action('plugin.msg_request', array($this,'msg_request'));
             $this->register_action('plugin.msg_request', array($this,'msg_request'));
-            $this->register_action('save-prefs', array($this,'msg_request'));
-        }elseif ($this->rc->task == 'settings') {
-
-			// загружаем файл скина плагина
-			//$this->includeCSS();
-
-			/**
-			* Регистрируем хуки сервера
-			* Способ работы хуков плагинов заключается в том, что в разное время, пока Roundcube обрабатывает, он проверяет,
-			* есть-ли у каких-либо плагинов зарегистрированные функции для запуска в это время, и если да, то функции запускаются
-			* (путем выполнения «ловушки»). Эти функции могут изменять или расширять поведение Roundcube по умолчанию.
-			* Регистрация хуков:     $this->add_hook('hook_name', $callback_function);
-			* где второй аргумент – это обратный вызов PHP (функция в этом файле ниже), который может ссылаться на простую функцию или метод
-			* объекта. Зарегистрированная функция получает один хеш-массив в качестве аргумента, который содержит определенные данные текущего
-			* контекста в зависимости от ловушки.
-			* См. «Перехватчики подключаемых модулей» для получения полного описания всех перехватчиков и их полей аргументов.
-			* Аргумент var может быть изменен функцией обратного вызова и может (даже частично) быть возвращен приложению.
-			*/
-			$this->add_hook('preferences_sections_list', array($this,'insert_section'));
-			$this->add_hook('preferences_list', array($this,'settings_blocks'));
-			$this->add_hook('preferences_save', array($this,'save_settings'));
-			//$this->add_hook('folder_form', array($this,'folder_form'));
-			$this->add_hook('preferences_update', array($this,'update_settings'));
-
-		}
+            //$this->register_action('save-prefs', array($this,'msg_request'));
+        }
+        //elseif ($this->rc->task == 'settings') {
+//            // загружаем файл скина плагина
+//            //$this->includeCSS();
+//            /**
+//            * Регистрируем хуки сервера
+//            * Способ работы хуков плагинов заключается в том, что в разное время, пока Roundcube обрабатывает, он проверяет,
+//            * есть-ли у каких-либо плагинов зарегистрированные функции для запуска в это время, и если да, то функции запускаются
+//            * (путем выполнения «ловушки»). Эти функции могут изменять или расширять поведение Roundcube по умолчанию.
+//            * Регистрация хуков:     $this->add_hook('hook_name', $callback_function);
+//            * где второй аргумент – это обратный вызов PHP (функция в этом файле ниже), который может ссылаться на простую функцию или метод
+//            * объекта. Зарегистрированная функция получает один хеш-массив в качестве аргумента, который содержит определенные данные текущего
+//            * контекста в зависимости от ловушки.
+//            * См. «Перехватчики подключаемых модулей» для получения полного описания всех перехватчиков и их полей аргументов.
+//            * Аргумент var может быть изменен функцией обратного вызова и может (даже частично) быть возвращен приложению.
+//            */
+//            $this->add_hook('preferences_sections_list', array($this,'insert_section'));
+//            $this->add_hook('preferences_list', array($this,'settings_blocks'));
+//            $this->add_hook('preferences_save', array($this,'save_settings'));
+//            //$this->add_hook('folder_form', array($this,'folder_form'));
+//            $this->add_hook('preferences_update', array($this,'update_settings'));
+//        }
         // когда наша функция запускается - страница обновляется, функцию обратного вызова требуется зарегистрировать еще раз
-        elseif ($this->rc->action == 'plugin.msg_request') {
+	elseif ($this->rc->action == 'plugin.msg_request') {
             $this->register_action('plugin.msg_request', array($this,'msg_request'));
             // Определим хуки которые будут работать в контексте функции 'msg_request'.
-            $this->add_hook('preferences_save', array($this,'save_settings'));
-            // Срабатывание функции 'update_settings' требуется при каждой перезагрузке страницы.
-            $this->add_hook('preferences_update', array($this,'update_settings'));
+            //$this->add_hook('preferences_save', array($this,'save_settings'));
+            // Срабатывание функции 'update_settings' требуется при выполнении функции 'msg_request'.
+            // По последней проверке 11.02.21 в 12.39
+            // Срабатывание функции 'update_settings' при выполнении функции 'msg_request' не требуется - закомментируем её.
+            //$this->add_hook('preferences_update', array($this,'update_settings'));
         }
     }
 
@@ -198,39 +198,41 @@ class rm_duplicate_messages extends rcube_plugin
         // Создадим наши записи в массиве пользовательских настроек 'prefs'.
         // Сохраним туда массив 'uids' и имя текущей папки 'folder'.
         $user_prefs['rm_duplicate_messages'] = array(
-            'uids'  =>'uids1',//$uids,
-            'folder'=>'folder1' //$folder
+            'uids'  =>$uids,
+            'folder'=>$folder
         );
-//$this->rc->task = 'login|logout|mail|settings';
-//$this->task = 'login|logout|mail|settings';
+
+        // Получаем из хранилища (массив 'prefs') наши ранее сохранённые данные.
+        $cfg1     = $this->rc->config->get('rm_duplicate_messages');
+
+        // Создадим объект 'rc_user' как экземпляр класса 'rcube_user',
+        // и передадим идентификатор текущего пользователя.
+        $rc_user = new rcube_user($this->rc->user->ID);
+        // Вызываем функцию 'save_prefs' с параметром 'user_prefs' в качестве данных которые нужно сохранить.
+        $rc_user->save_prefs($user_prefs);
 
         // Вызываем хук с функцией сохранения настроек в массиве пользовательских настроек 'prefs'.
-//        $this->rc->plugins->exec_hook('preferences_save', array(
-//                // Передаём название нашего плагина в качестве имени секции в массиве пользовательских настроек 'prefs'.
-//                'section'=> 'rm_duplicate_messages')
-//        );
-
-//$plugin = rcmail::get_instance()->plugins->exec_hook('preferences_save',
-//    array('prefs' => $user_prefs, 'section' => 'rm_duplicate_messages'));
-
-
+        //        $this->rc->plugins->exec_hook('preferences_save', array(
+        //                // Передаём название нашего плагина в качестве имени секции в массиве пользовательских настроек 'prefs'.
+        //                'section'=> 'rm_duplicate_messages'));
+        //$plugin = rcmail::get_instance()->plugins->exec_hook('preferences_save', array('prefs' => $user_prefs, 'section' => 'rm_duplicate_messages'));
 
         // Создаём экземпляр класса    'rcube_user' и передаём ему ID текущего пользователя.
-        $rcu            = new rcube_user($this->rc->user->ID);
+        //$rcu = new rcube_user($this->rc->user->ID);
 
         // Получаем текущие предпочтения текущего пользователя.
-        $old_user_prefs = $rcu->get_prefs();
+        //$old_user_prefs = $rcu->get_prefs();
 
         // Вызываем хук  и передаём параметры:
         // Вызываем хук 'preferences_update' с функцией обновления настроек в массиве пользовательских настроек 'prefs'.
-        $this->rc->plugins->exec_hook('preferences_update', array(
-                // ID текущего пользователя.
-                'userid'=> $this->rc->user->ID,//$this->ID,
-                // Предпочтения текущего пользователя которые нужно изменить.
-                'prefs'=> $user_prefs,// $user_prefs, //$a_user_prefs,
-                // Старые предпочтения текущего пользователя которые есть в хранилище.
-                'old'=> $old_user_prefs
-            ));
+        //        $this->rc->plugins->exec_hook('preferences_update', array(
+        //                // ID текущего пользователя.
+        //                'userid'=> $this->rc->user->ID,//$this->ID,
+        //                // Предпочтения текущего пользователя которые нужно изменить.
+        //                'prefs'=> $user_prefs,// $user_prefs, //$a_user_prefs,
+        //                // Старые предпочтения текущего пользователя которые есть в хранилище.
+        //                'old'=> $old_user_prefs
+        //            ));
 
         /**
         * Инициализация и получение объекта хранения писем
@@ -238,37 +240,34 @@ class rm_duplicate_messages extends rcube_plugin
         * @return rcube_storage Storage        Объект хранения
         */
         $storage = $this->rc->get_storage();
+
         // Получаем из хранилища наши данные.
-        //$cfg = $this->rc->config->get('rm_duplicate_messages');
-
+        $cfg2     = $this->rc->config->get('rm_duplicate_messages');
+        $a       = 1;
     }
 
-    // Функция получает список uids из массива $_POST и сохранияет конфигурацию.
-    function save_settings($args)
-    {
-if ($args['section'] == 'rm_duplicate_messages') {// Должна быть save-prefs
-	        // Из глобального массива 'POST' получаем 'uids' выделенных сообщений.
-        //$uids = rcmail::get_uids(null, null, $multifolder, rcube_utils::INPUT_POST);
-
-        // Из глобального массива 'POST' получаем имя текущей папки '_mbox'
-        $folder = $_POST['_mbox'];
-
-        // Преобразуем двумерный массив 'uids' в одномерный массив 'uids'.
-        $uids   = $uids[$folder];
-
-        // Создадим наши записи в массиве пользовательских настроек 'prefs'.
-        // Сохраним туда массив 'uids' и имя текущей папки 'folder'.
-        $args['prefs']['rm_duplicate_messages'] = array(
-            'uids'  =>'uids2',//$uids,
-            'folder'=>'folder2' //$folder
-        );
-                // Удалим ранее созданные наши записи в массиве пользовательских настроек 'prefs'.
-        //$args['prefs']['rm_duplicate_messages'] = NULL;
-        //$this->update_settings ($args);
-		}
-
-        return $args;
-    }
+    //    // Функция получает список uids из массива $_POST и сохранияет конфигурацию.
+    //    function save_settings($args)
+    //    {
+    //if ($args['section'] == 'rm_duplicate_messages') {// Должна быть save - prefs
+    //            // Из глобального массива 'POST' получаем 'uids' выделенных сообщений.
+    //        //$uids = rcmail::get_uids(null, null, $multifolder, rcube_utils::INPUT_POST);
+    //        // Из глобального массива 'POST' получаем имя текущей папки '_mbox'
+    //        $folder = $_POST['_mbox'];
+    //        // Преобразуем двумерный массив 'uids' в одномерный массив 'uids'.
+    //        $uids = $uids[$folder];
+    //        // Создадим наши записи в массиве пользовательских настроек 'prefs'.
+    //        // Сохраним туда массив 'uids' и имя текущей папки 'folder'.
+    //        $args['prefs']['rm_duplicate_messages'] = array(
+    //            'uids'  =>'uids0',//$uids,
+    //            'folder'=>'folder0' //$folder
+    //        );
+    //                // Удалим ранее созданные наши записи в массиве пользовательских настроек 'prefs'.
+    //        //$args['prefs']['rm_duplicate_messages'] = NULL;
+    //        //$this->update_settings ($args);
+    //        }
+    //        return $args;
+    //    }
 
     function update_settings ($args)
     {
@@ -295,82 +294,51 @@ if ($args['section'] == 'rm_duplicate_messages') {// Должна быть save-
 
         // Если в массиве '$_REQUEST' есть наша акция - выполняем инструкции перезаписи
         // данные - считаем их от туда, если нет перезапишем имеющиеся
-        // Акции которые перезаписывают: list, save-prefs
+        // Акции которые перезаписывают: list, save - prefs
         //if ($_POST['_action'] == 'loading1612877025319') {plugin.msg_request
-        // Для работы этого блока и сохранения параметров нужно вызвать акцию save-prefs.
+        // Для работы этого блока и сохранения параметров нужно вызвать акцию save - prefs.
         // И регистрировать её в своём плагине не нужно.
-       if ($_REQUEST['_action'] == 'save-prefs') {
-        // Из глобального массива 'POST' получаем имя текущей папки '_mbox'
-        $folder = $_POST['_mbox'];
+        // Если работает наша акция то получаем обновлённые данные из массива '$_POST'.
+//        if ($_REQUEST['_action'] == 'plugin.msg_request') {
+//            // Из глобального массива 'POST' получаем имя текущей папки '_mbox'
+//            $folder = $_POST['_mbox'];
+//            // Из глобального массива 'POST' получаем 'uids' выделенных сообщений.
+//            $uids = rcmail::get_uids(null, null, $multifolder, rcube_utils::INPUT_POST);
+//            // Преобразуем двумерный массив 'uids' в одномерный массив 'uids'.
+//            $uids   = $uids[$folder];
+//            //$args['prefs']['rm_duplicate_messages'] =
+//            // Создадим наши записи в массиве пользовательских настроек 'prefs'.
+//            // Сохраним туда массив 'uids' и имя текущей папки 'folder'.
+//            $args['prefs']['rm_duplicate_messages'] = array(
+//                'uids'  =>$uids,
+//                'folder'=>$folder
+//            );
+//        }else {
+//            //вот этат часть записывает
 
-        // Из глобального массива 'POST' получаем 'uids' выделенных сообщений.
-        //$uids = rcmail::get_uids(null, null, $multifolder, rcube_utils::INPUT_POST);
+            // Если работает не наша акция и в массиве 'args' есть наши старые данные то просто перезапишем их.
+            if (isset($args['old']['rm_duplicate_messages'])) {
+                //$old_args = [];
+                $args['prefs']['rm_duplicate_messages'] = $args['old']['rm_duplicate_messages'];
+                //$args['prefs']['rm_duplicate_messages'] = array(
+                //'uids'  =>'old_data1',//$uids,
+                //'folder'=>'old_data1' //$folder
+                //);
+            }
+        //}
+        // Удалим ранее созданные наши записи в массиве пользовательских настроек 'prefs'.
+        //$args['prefs']['rm_duplicate_messages'] = NULL;
 
-        // Преобразуем двумерный массив 'uids' в одномерный массив 'uids'.
-        $uids   = $uids[$folder];
-        //$args['prefs']['rm_duplicate_messages'] = 
-        // Создадим наши записи в массиве пользовательских настроек 'prefs'.
-        // Сохраним туда массив 'uids' и имя текущей папки 'folder'.
-        $args['prefs']['rm_duplicate_messages'] = array(
-            'uids'  =>'uids11',//$uids,
-            'folder'=>'folder11' //$folder
-        );
-        //}else {//вот этат часть записывает
-//            if (isset($args['old']['rm_duplicate_messages'])) {
-//                //$old_args = [];
-//                //$args['prefs']['rm_duplicate_messages'] = $args['old']['rm_duplicate_messages'];
-//                $args['prefs']['rm_duplicate_messages'] = array(
-//            'uids'  =>'uids9',//$uids,
-//            'folder'=>'folder9' //$folder
-//        );
-            //}
-       }
-                // Удалим ранее созданные наши записи в массиве пользовательских настроек 'prefs'.
-                //$args['prefs']['rm_duplicate_messages'] = NULL;
-                
-// Вернём полученное значение в вызывающую функцию.
+        // Вернём полученное значение в вызывающую функцию.
         return $args;
     }
 
-// Вставим название нашей секции
-	// Получите локализованный текст на желаемом языке
-	// Обертка для rcube::gettext() с добавлением ID плагина в качестве домена
-	function insert_section ($args)
-	{
-		//$this->logger('psections ', $args);
-		$args['list']['rm_duplicate_messages'] = array(
-			'id'     =>'rm_duplicate_messages',
-			'section'=>'rm_duplicate_messages');
-		return $args;
-	}
-
-	// Блок обработки настроек плагина (выпадающий список)
-	function settings_blocks ($args)
-	{
-		//$this->logger('prefslist ', $args);		//return $args;
-		if ($args['section'] == 'rm_duplicate_messages') {
-
-			// Обертка для rcube::gettext() с добавлением ID плагина в качестве домена
-			// функция $this->gettext('параметр_из_общего_массива_локализации')
-			$args['blocks']['blurb']['name'] = $this->gettext('about');
-			$args['blocks']['blurb']['content'] = $this->gettext('blurbcontent');
-			$args['blocks']['main']['name'] = $this->gettext('mainoptions');
-			$args['blocks']['main']['options']['rm_duplicate_messages'] = array(
-
-				'uids'  =>'uids2',//$uids,
-            'folder'=>'folder2' //$folder
-			);
-			
-		}
-		return $args;
-	}
-	
     /**
-    * Пишем отладочную информацию в log-файл.
+    * Функция записи отладочной информации в log-файл.
     * file_put_contents — Пишет данные в файл
     * print_r — Выводит удобочитаемую информацию о переменной
-    * Если filename не существует, файл будет создан.
-    * Иначе, существующий файл будет перезаписан, за исключением случая, если указан флаг FILE_APPEND
+    * Если filename не существует, файл будет создан. Иначе, существующий файл будет
+    * перезаписан, за исключением случая, если указан флаг FILE_APPEND
     */
     protected function write_log_file ($args)
     {
