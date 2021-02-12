@@ -1,47 +1,51 @@
 <?php
 // В условии проверяем существование параметров.
 if ($_GET['amount'] || $_GET['apr'] || $_GET['years'] || $_GET['zipcode'] || $_GET['uids']) {
-    // Переменным присвоим переданные значения.
-    $amount = $_GET['amount'];
-    $apr    = $_GET['apr'];
-    $years  = $_GET['years'];
-    $zipcode= $_GET['zipcode'];
-    $uids=$_GET['uids'];
+	// Переменным присвоим переданные значения.
+	$amount = $_GET['amount'];
+	$apr    = $_GET['apr'];
+	$years  = $_GET['years'];
+	$zipcode= $_GET['zipcode'];
+	$uids   = $_GET['uids'];
 }
 
 // Создаём одномерный массив.
 $data = array(
-    // Массив первого уровня.
-    array(
-        'amount' => $_GET['amount'],
-        'apr'    => $_GET['apr'],
-        'years'  => $_GET['years'],
-        'zipcode'=> $_GET['zipcode']
-    )
-    // Массив второго уровня.
-    //array('name' => 'bar', 'url' => 'url2'),
+	// Массив первого уровня.
+	array(
+		'amount' => $_GET['amount'],
+		'apr'    => $_GET['apr'],
+		'years'  => $_GET['years'],
+		'zipcode'=> $_GET['zipcode']
+	)
+	// Массив второго уровня.
+	//array('name' => 'bar', 'url' => 'url2'),
 );
 echo('Привет');
 
-
+//		/**
+// * Инициализация и получение объекта хранения писем.
+// * @return rcube_storage   Объект хранения (Storage)
+//		*/
+//		$Storage = $this->rc->get_storage();
 //
 //        /**
-//        * Цикл получения заголовков сообщения по текущему 'uid'.
-//        * Циклом foreach перебираем вложенный массив '$uids[$folder]' и получаем 'uid'
-//        * каждого отдельного сообщения, присвоим это значение переменной '$msg_uid'.
+// * Цикл получения заголовков сообщения по текущему 'uid'.
+// * Циклом foreach перебираем вложенный массив '$uids[$folder]' и получаем 'uid'
+// * каждого отдельного сообщения, присвоим это значение переменной '$msg_uid'.
 //        */
 //        foreach ($uids[$folder] as $msg_uid) {
 //            // Разбираем сообщение. Начало
 //            /**
-//            * Получение заголовков сообщений и структуры тела с сервера и построение структуры объекта,
-//            * подобной той, которая создается PEAR::Mail_mimeDecode
-//            *
-//            *     get_message (int $uid, string $folder = null): object
-//            *
-//            * @param int $uid        UID сообщения для получения
-//            * @param string    $folder Папка для чтения
-//            *
-//            * @return object rcube_message_header Данные сообщения
+// * Получение заголовков сообщений и структуры тела с сервера и построение структуры объекта,
+// * подобной той, которая создается PEAR::Mail_mimeDecode
+// *
+// * get_message (int $uid, string $folder = null): object
+// *
+// * @param int $uid        UID сообщения для получения
+// * @param string    $folder Папка для чтения
+// *
+// * @return object rcube_message_header Данные сообщения
 //            */
 //            // получаем заголовки сообщения
 //            $msg_headers = $storage->get_message($msg_uid, $folder);
@@ -58,18 +62,18 @@ echo('Привет');
 //            }
 //
 //            /**
-//            * Получаем тело определенного сообщения с сервера
-//            *
-//            *     get_message_part(int $uid, string $part   = 1, \rcube_message_part $o_part = null, mixed $print = null, resource $fp = null, boolean $skip_charset_conv = false) : string
-//            *
-//            * @param int $uid                    UID сообщения
-//            * @param string $part                Номер части
-//            * @param rcube_message_part $o_part    Объект детали, созданный get_structure()
-//            * @param mixed $print                Верно для печати части, ресурс для записи содержимого части в указатель файла
-//            * @param resource $fp                Указатель файла для сохранения части сообщения
-//            * @param boolean $skip_charset_conv    Отключает преобразование кодировки
-//            *
-//            * @return string    Сообщение / тело части, если не напечатано
+// * Получаем тело определенного сообщения с сервера
+// *
+// * get_message_part(int $uid, string $part = 1, \rcube_message_part $o_part = null, mixed $print = null, resource $fp = null, boolean $skip_charset_conv = false) : string
+// *
+// * @param int $uid                    UID сообщения
+// * @param string $part                Номер части
+// * @param rcube_message_part $o_part    Объект детали, созданный get_structure()
+// * @param mixed $print                Верно для печати части, ресурс для записи содержимого части в указатель файла
+// * @param resource $fp                Указатель файла для сохранения части сообщения
+// * @param boolean $skip_charset_conv    Отключает преобразование кодировки
+// *
+// * @return string    Сообщение / тело части, если не напечатано
 //            */
 //            // в цикле разберём части сообщения и записываем в массив $msg1_parts каждую часть в свой ключ $part,
 //            // если частей нет - PHP выдаёт предупреждение 'Invalid argument supplied for foreach()' - нет переменной $value
@@ -102,10 +106,10 @@ echo('Привет');
 //        $msgs_json = json_encode($msgs);
 //
 //        /**
-//        * Пример #2 Пример удаления cookie посредством setcookie()
-//        * Чтобы удалить cookie достаточно в качестве срока действия указать какое-либо время
-//        * в прошлом. Это запустит механизм браузера, удаляющий истёкшие cookie.
-//        * В примерах ниже показано, как удалить cookie, заданные в предыдущих примерах:
+// * Пример #2 Пример удаления cookie посредством setcookie()
+// * Чтобы удалить cookie достаточно в качестве срока действия указать какое - либо время
+// * в прошлом. Это запустит механизм браузера, удаляющий истёкшие cookie.
+// * В примерах ниже показано, как удалить cookie, заданные в предыдущих примерах:
 //        */
 //        // установка даты истечения срока действия на час назад
 //        //setcookie('TestCookie0', '', time() - 3600);
@@ -133,10 +137,10 @@ echo('Привет');
 //        //rcube_utils::setcookie('testu_cookie2', $uids, time() + 60, ' / ~rasmus124 / ', 'example.com', 1);
 //
 //        /**
-//        * Установить переменную среды
-//        *
-//        * @param string $name Имя свойства
-//        * @param mixed $value Значение свойства
+// * Установить переменную среды
+// *
+// * @param string $name Имя свойства
+// * @param mixed $value Значение свойства
 //        */
 //        // передадим значение переменной в клиентскую среду (браузер)
 //        $this->rc->output->set_env('msgs_json', $msgs_json);
@@ -145,20 +149,20 @@ echo('Привет');
 //        //unset($msg_marked, $folder);
 //
 //        /**
-//        * Добавить локализованную метку в клиентскую среду (браузер).
-//        * Обертка для add_label(), добавляющая ID плагина как домен.
-//        * Синтаксис: 'plugin.lbl_get_msg' - наша локализованная метка.
+// * Добавить локализованную метку в клиентскую среду (браузер).
+// * Обертка для add_label(), добавляющая ID плагина как домен.
+// * Синтаксис: 'plugin.lbl_get_msg' - наша локализованная метка.
 //        */
 //        //$this->rc->output->add_label('plugin.lbl_get_msg');
 //
 //        /**
-//        * Вызов клиентского метода
-//        *
-//        * @param string Метод для вызова
-//        * @param ...    Дополнительные аргументы
-//        *
-//        * Команда передаётся браузеру функцией - send()
-//        * Синтаксис: 'plugin.get_msg' - команда выполняемая в браузере.
+// * Вызов клиентского метода
+// *
+// * @param string Метод для вызова
+// * @param ...    Дополнительные аргументы
+// *
+// * Команда передаётся браузеру функцией - send()
+// * Синтаксис: 'plugin.get_msg' - команда выполняемая в браузере.
 //        */
 //        $this->rc->output->command('plugin.get_msg');
 //
