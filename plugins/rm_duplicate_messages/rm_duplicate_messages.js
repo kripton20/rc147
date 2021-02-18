@@ -31,7 +31,6 @@ function msg_save_prefs() {
     '<div class="processing_mode"><input name="plg_process_mode" type="radio" value="in_server">'+
     rcmail.get_label('rm_duplicate_messages.lbl21')+'</div>'+
     '<div class="processing_mode_lbl">'+rcmail.get_label('rm_duplicate_messages.lbl22')+'</div></fieldset></div></div>';
-
     // Заголовок диалогового окна.
     var title = rcmail.get_label('rm_duplicate_messages.lbl3');
     // Кнопки диалогового окна.
@@ -54,35 +53,26 @@ function msg_save_prefs() {
         var lock = rcmail.set_busy(true, 'rm_duplicate_messages.checkdpl');
         // В условии проверим - сколько 'uids' нужно отправить в запросе: все или только выделенные.
         if (msg_sum=='mssg_all') {
-            // Получаем значения 'uids' всего списка писем.
-            var rows = rcmail.message_list.rows;
-            // Получаем значения 'uids' всего списка писем.
+            // Получаем значения 'uids' всего списка писем:
             // Объявляем пустой массив для записи  'uids'.
             // Оператор 'var' объявит массив для всей функции - он будет виден за пределами цикла.
             var uids = [];
-            // В цикле получаем 'uids' из объекта 'rows'.
-            for(b in rows){
+            // В цикле получаем 'uid' из объекта 'rcmail.message_list.rows'.
+            for(uid in rcmail.message_list.rows){
                 // Запишем каждое значение 'uids' в массив 'uids'.
                 // Функция push - Добавляет элемент в конец массива.
-                uids.push(b);
+                uids.push(uid);
             }
-            }else{
+        }else{
             // Получаем значения 'uids' выделенного письма в списке.
             var uids = rcmail.message_list.selection;
         }
         // Остановим работу функции и выведем сообщение если значение 'uids' не получено.
         if (!uids) return window.alert('\n'+rcmail.get_label('rm_duplicate_messages.lbl23')+'\n'+'\n'+rcmail.get_label('rm_duplicate_messages.lbl24'));
-
-        // Делаем запрос на сервер: берём массив списка писем, включаем блокировку интерфейса,
-        // этот параметр для того чтобы это сообщение перекрывалось следующим сообщением
-        // о том что процедура поиска дубликатов сообщений завершена
-        //var params = rcmail.check_recent_params();
-
         // Передаём запрос на сервер с указанием выполнить PHP-функцию сохранения настроек обработки писем - 'msg_save_prefs':
         // вызываем метод 'http_post' объекта 'rcmail' (параметры через запятую),
         // метод 'selection_post_data()' отправляет данные на сервер в массив [_POST] -
         // там содержатся передаваемые параметры из браузера.
-        //rcmail.http_post('plugin.msg_save_prefs', params, lock);
         rcmail.http_post('plugin.msg_save_prefs', rcmail.selection_post_data(
                 {
                     // Идентификаторы сообщений.
@@ -97,15 +87,20 @@ function msg_save_prefs() {
             ), lock);
 
         // Отключим нашу коммандную кнопку
-        window.rcmail.enable_command('plugin.btn_cmd_rm_dublecates', false);
+        //window.rcmail.enable_command('plugin.btn_cmd_rm_dublecates', false);
     };
     // Кнопка 'Сбросить настройки'
     buttons[rcmail.get_label('rm_duplicate_messages.lbl6')] = function(e) {
         // Закрываем окно
         $(this).remove();
-        // Посылаем на сервер команду стереть данные пользовательских настроек текущего пользователя в хранилище
-        //var lock = rcmail.set_busy(true, 'rm_duplicate_messages.checkdpl');
-        //rcmail.http_post('plugin.msg_save_prefs', rcmail.selection_post_data({}), lock);
+        // Посылаем на сервер команду стереть данные пользовательских настроек текущего пользователя в хранилище.
+        var lock = rcmail.set_busy(true, 'rm_duplicate_messages.checkdpl');
+        rcmail.http_post('plugin.msg_save_prefs', rcmail.selection_post_data(
+                {
+                    // Передаём параметр сброса настроек.
+                    _user_prefs_null: 'user_prefs_null'
+                }
+            ), lock);
     };
     // Кнопка отмены.
     buttons[rcmail.get_label('cancel')] = function(e) {
@@ -119,7 +114,6 @@ function msg_save_prefs() {
         // Если выделены - ставим переключатель на 'Выделенные'.
         document.getElementById('msg_sum_id1').checked = true;
     }
-    var stop=1;
 }
 // Функция вставляет новый текст при переключении переключателя.
 function innerdiv(){
@@ -143,32 +137,26 @@ function msg_handle(){
     // После отправки в консоле появляются заголовки.
     req.send(null);    // Отправим запрос.
 }
-// функция поиска дубликатов сообщений в переданном массиве. Функция разбора массива.
-function msg_compare(){
-    var msgs=JSON.parse(localStorage.msgs_json);
-    var a;
-}
-
 // Инициализируем объект 'rcmail: rcube_webmail'. ($(document) взято из jQuery.)
 $(document).ready(function() {
-        // если инициализирован объект 'window.rcmail' выполняем операторы в условии
+        // Если инициализирован объект 'window.rcmail' выполняем операторы в условии.
         if (window.rcmail) {
             /**
-            * Добавление и регистрация слушателей событий
+            * Добавление и регистрация слушателей событий.
             * Это делается с помощью следующих двух функций:
             *     rcmail.addEventListener|removeEventListener('event', callback);
             * Функция callback получает объект события в качестве одного аргумента.
             * Этот объект события содержит свойства, специфичные для события.
             * Они перечислены в качестве аргументов под соответствующим описанием события.
             *
-            * EventTargetМетод addEventListener()устанавливает функцию, которая будет вызываться всякий раз,
+            * Метод addEventListener()устанавливает функцию, которая будет вызываться всякий раз,
             * когда будет происходить указанное событие. Общими целями являются Element, Document, и Window,
-            * но целью может быть любой объект, поддерживающий события (например XMLHttpRequest).
+            * но целью может быть любой объект, поддерживающий события (например XMLHttpRequest или объект формы).
             *      addEventListener() работает путем добавления функции или объекта, реализующего EventListener
             * в список прослушивателей событий для указанного типа события на том EventTarget, на котором оно вызывается.
             * https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
             */
-            // параметр 'init' - событие, параметр 'function(evt)' это - ананимная callback-функция
+            // параметр 'init' - событие, параметр 'function(evt)' это - ананимная callback-функция.
             rcmail.addEventListener('init', function(evt) {
                     /**
                     * Пользовательские команды должны быть зарегистрированы вместе с функцией обратного вызова,
@@ -221,10 +209,6 @@ $(document).ready(function() {
                     //msg_compare();
                 }
             );
-
-            rcmail.addEventListener('refreshing', function () {
-                    window.alert(refreshing);
-                });
 
             // функция уведомления об окончании проверки на дубликаты и включения кнопки
             rcmail.addEventListener('plugin.successful', function () {
