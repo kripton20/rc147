@@ -201,8 +201,13 @@ class rm_duplicate_messages extends rcube_plugin
                 // Состояние командной кнопки: TRUE - работает, FALSE - неработает.
                 'btn_cmd_toolbar'=>FALSE,
                 // Два счётчика смещения по массиву.
-                'msg1_offset'=>0,//$msg1_offset,
-                'msg2_offset'=>1,//$msg2_offset
+                // В виде массива для обработки в цикле.
+                'msg_offset'=>array(
+                    'msg1'=>0,//$msg1_offset,
+                    'msg2'=>1,//$msg2_offset
+                ),
+                //'msg1_offset'=>0,//$msg1_offset,
+                //'msg2_offset'=>1,//$msg2_offset
                 // Колличество обрабатываемых сообщений: все сообщения, выделенные.
                 'msg_sum'=>$_POST['_msg_sum'],
                 // Режим обработки найденных дубликатов писем: отмечать, удалять.
@@ -267,15 +272,106 @@ class rm_duplicate_messages extends rcube_plugin
             // Закончим работу плагина.
             exit;
         }
+        // Текущая папка.
+        $folder = $cfg_rm_duplicate['folder'];
+        /**
+        * Инициализация и получение объекта хранения писем.
+        * @return rcube_storage   Объект хранения (Storage)
+        */
+        $storage= $this->rc->get_storage();
+        // Получаем значения счётчиков смещения первого и второго сообщений.
+        // Цикл выполняет только две итерации.
+        foreach ($cfg_rm_duplicate['msg_offset'] as $key => $msg_offset) {
+            // Текущий 'uids' сообщения.
+            $msg_uid = $cfg_rm_duplicate['uids'][$msg_offset];
+            $MESSAGE = new rcube_message($msg_uid, $folder);
+            //$header = $MESSAGE->get_header();
+            //            $part_body = $MESSAGE->get_part_body("0");
+            //            $part_content0 = $MESSAGE->get_part_content("0");
+            //            $part_content1 = $MESSAGE->get_part_content("1");
+            //            $part_content2 = $MESSAGE->get_part_content("2");
+            $body    = $storage->get_body($msg_uid);
+            //$body1 = $MESSAGE->body;
+            //$body0 = $MESSAGE->get_part_body(0, true);
+            //$body1 = $MESSAGE->get_part_body(1, true);
+            //$body2 = $MESSAGE->get_part_body(2, true);
 
-        // Получаем значения настроек:
-        // Счётчик смещения первого и второго сообщений.
-        $msg1_offset = $cfg_rm_duplicate['msg1_offset'];
-        $msg2_offset = $cfg_rm_duplicate['msg2_offset'];
+            if (count($MESSAGE->attachments)) {
+                foreach ($MESSAGE->attachments as $attach_prop) {
+                    $filename = rcmail_attachment_name($attach_prop, FALSE);
+                    //$filesize = $RCMAIL->message_part_size($attach_prop);
+                    $filesize = rcmail::get_instance()->message_part_size($attach_prop);
+                    //$filesize1 = rcube::get_instance()->message_part_size($part);
+                    //$part_size = rcube::get_instance()->message_part_size($part);
+                }
+            }
 
-        // Текущий 'uids' сообщения.
-        $msg_uid1    = $cfg_rm_duplicate['uids'][$cfg_rm_duplicate['msg1_offset']];
-        $msg_uid2    = $cfg_rm_duplicate['uids'][$cfg_rm_duplicate['msg2_offset']];
+            /**
+            * Получение заголовков сообщений и структуры тела с сервера и построение структуры объекта,
+            * подобной той, которая создается PEAR::Mail_mimeDecode.
+            * Синтаксис: get_message (int $uid, string $folder = null): object
+            * @param int $uid         UID сообщения для получения
+            * @param string $folder   Папка для чтения
+            * @return object $rcube_message_header Данные сообщения
+            */
+            // Получаем заголовок сообщения первого письма: указываем 'uid' и папку первого письма.
+            $msg_headers = $storage->get_message($msg_uid, $folder);
+            $msg_headers1= $storage->get_message_headers($msg_uid, $folder);
+            // Если первое сообщение имеет флаг 'DUBLIKAT' - пропустим это сообщение (начнём новую интерацию текущего цикла).
+            if (isset($msg_headers->flags['DUBLIKAT'])) {
+                // увеличим счётчики первого и второго сообщения и повторяем весь цикл
+                //$msg_offset++;
+                //$msg2_offset = $msg_offset + 1;
+                // очищаем массивы и переменные первого и второго сообщения, функция unset()
+                //unset($msg_headers, $msg_uid);
+                // начнём цикл заново
+                //continue;
+            }
+
+
+
+
+
+            /**
+            * Получаем тело определенного сообщения с сервера
+            * get_message_part(int $uid, string $part = 1, \rcube_message_part $o_part = null, mixed $print = null, resource $fp = null, boolean $skip_charset_conv = false) : string
+            * @param int $uid                     UID сообщения
+            * @param string $part                 Номер части
+            * @param rcube_message_part $o_part   Объект детали, созданный get_structure()
+            * @param mixed $print                 Верно для печати части, ресурс для записи содержимого части в указатель файла
+            * @param resource $fp                 Указатель файла для сохранения части сообщения
+            * @param boolean $skip_charset_conv   Отключает преобразование кодировки
+            * @return string                      Сообщение / тело части, если не напечатано
+            */
+            // В цикле разберём части сообщения и записываем в массив $msg1_parts каждую часть в свой ключ $part,
+            // если частей нет - PHP выдаёт предупреждение 'Invalid argument supplied for foreach()' - нет переменной $value
+            foreach ($msg_headers->structure->parts as $part => $msg_part) {
+                // Получаем части сообщения.
+                $msg_parts[$part] = array(
+                    // Сообщение
+                    'message'=>$storage->get_message_part($msg_uid, $part, null, null, null, false),
+                    // Имя вложенного файла
+                    'filename'=>$msg_part->filename
+
+                );
+            }
+            // Удалим переменые.
+            unset($msg_part, $part);
+
+            if ($f == 1) {
+                //$msg_headers->structure->parts[$part]->filename
+                //'filename'=>$msg_part->filename
+            }
+
+            // По ссылке изменим текущее значение счётчика смещения
+            //$msg2 =&$cfg_rm_duplicate['msg_offset']['msg2'];
+            //$msg2 = $msg_offset++;
+
+            $b = 1;
+        }
+
+
+
 
         // Цикл выполняет только две итерации.
         //for ($i = 0; $i < 2; $i++) {
@@ -283,7 +379,6 @@ class rm_duplicate_messages extends rcube_plugin
         //            foreach ($cfg_rm_duplicate['uids'] as $uid1) {
         //                $uid = $uid1;
         //            }
-        
         /**
         * array_slice — выбирает срез массива
         * Описание:
@@ -294,62 +389,14 @@ class rm_duplicate_messages extends rcube_plugin
         * @param offset   Если параметр offset неотрицательный, последовательность начнётся на указанном
         *                 расстоянии от начала array.
         */
-        //$msg1        = array_slice($cfg_rm_duplicate['uids'], 0, 1);
-        //$msg2        = array_slice($cfg_rm_duplicate['uids'], 1, 1);
-        $a           = 1;
+        //$msg1 = array_slice($cfg_rm_duplicate['uids'], 0, 1);
+        //$msg2 = array_slice($cfg_rm_duplicate['uids'], 1, 1);
+        //$a = 1;
 
-        // Текущая папка.
-        $folder      = $cfg_rm_duplicate['folder'];
-        
-        /**
-        * Инициализация и получение объекта хранения писем.
-        * @return rcube_storage   Объект хранения (Storage)
-        */
-        $storage     = $this->rc->get_storage();
-        /**
-        * Получение заголовков сообщений и структуры тела с сервера и построение структуры объекта,
-        * подобной той, которая создается PEAR::Mail_mimeDecode.
-        * Синтаксис: get_message (int $uid, string $folder = null): object
-        * @param int $uid         UID сообщения для получения
-        * @param string $folder   Папка для чтения
-        * @return object $rcube_message_header Данные сообщения
-        */
-        // Получаем заголовок сообщения первого письма: указываем 'uid' и папку первого письма.
-        $msg1_headers= $storage->get_message($msg_uid1, $folder);
-        // Если первое сообщение имеет флаг 'DUBLIKAT' - пропустим это сообщение (начнём новую интерацию текущего цикла).
-        if (isset($msg1_headers->flags['DUBLIKAT'])) {
-            // увеличим счётчики первого и второго сообщения и повторяем весь цикл
-            //$msg_offset++;
-            //$msg2_offset = $msg_offset + 1;
-            // очищаем массивы и переменные первого и второго сообщения, функция unset()
-            //unset($msg_headers, $msg_uid);
-            // начнём цикл заново
-            //continue;
-        }
-        /**
-        * Получаем тело определенного сообщения с сервера
-        * get_message_part(int $uid, string $part = 1, \rcube_message_part $o_part = null, mixed $print = null, resource $fp = null, boolean $skip_charset_conv = false) : string
-        * @param int $uid                     UID сообщения
-        * @param string $part                 Номер части
-        * @param rcube_message_part $o_part   Объект детали, созданный get_structure()
-        * @param mixed $print                 Верно для печати части, ресурс для записи содержимого части в указатель файла
-        * @param resource $fp                 Указатель файла для сохранения части сообщения
-        * @param boolean $skip_charset_conv   Отключает преобразование кодировки
-        * @return string                      Сообщение / тело части, если не напечатано
-        */
-        // В цикле разберём части сообщения и записываем в массив $msg1_parts каждую часть в свой ключ $part,
-        // если частей нет - PHP выдаёт предупреждение 'Invalid argument supplied for foreach()' - нет переменной $value
-        foreach ($msg1_headers->structure->parts as $part => $msg_part) {
-            // Получаем части сообщения.
-            $msg1_parts[$part] = array(
-                // Сообщение
-                'message'=>$storage->get_message_part($msg_uid1, $part, null, null, null, false),
-                // Имя вложенного файла
-                'filename'=>$msg_part->filename
-            );
-        }
-        // Удалим переменые.
-        unset($msg_part, $part);
+
+
+
+
         // Получаем заголовок сообщения второго письма: указываем 'uid' и папку второго письма.
         $msg2_headers = $storage->get_message($msg_uid2, $folder);
         if (isset($msg2_headers->flags['DUBLIKAT'])) {
