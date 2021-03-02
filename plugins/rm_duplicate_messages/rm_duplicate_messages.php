@@ -269,9 +269,17 @@ class rm_duplicate_messages extends rcube_plugin
         // Цикл выполняет только две итерации.
         foreach ($cfg_rm_duplicate['msg_offset'] as $key => $msg_offset) {
             // Текущий 'uids' сообщения.
-            $msg_uid = $cfg_rm_duplicate['uids'][$msg_offset];
+            $msg_uid         = $cfg_rm_duplicate['uids'][$msg_offset];
             // Получаем объект 'MESSAGE' как экземпляр класса 'rcube_message'.
-            $MESSAGE = new rcube_message($msg_uid, $folder);
+            $MESSAGE         = new rcube_message($msg_uid, $folder);
+            /**
+            * rcube_message_header::from_array() - заводской метод создания экземпляров заголовков из массива данных.
+            * @param array                   Хеш-массив со значениями заголовков
+            * @return rcube_message_header   Экземпляр объекта, заполненный значениями заголовков
+            */
+            // Получаем объект '$MESSAGE_HEADERS' как экземпляр класса 'rcube_message_header',
+            // с заголовками текущего сообщения.
+            $MESSAGE_HEADERS = rcube_message_header::from_array($MESSAGE->headers);
             // В цикле перебираем все части посьма.
             foreach ($MESSAGE->mime_parts as $part) {
                 // По условию получаем соответствующие части письма.
@@ -280,14 +288,37 @@ class rm_duplicate_messages extends rcube_plugin
                 // Записываем в переменную 'html' - html - версию.
                 if ($part->mimetype === 'text/html') $body_html = $MESSAGE->get_part_body($part->mime_id, true);
                 // Получаем необходимые заголовки письма.
-                $from1 = $MESSAGE->get_header('from');
-                //$from2 = $MESSAGE->get_header('from', TRUE);
-                //$from3 = $MESSAGE->get_header('from', FALSE);
+                //$this->write_log_file($MESSAGE_HEADERS);
+                //$this->write_log_file($MESSAGE->headers);
+//$subject     = $MESSAGE_HEADERS->get('subject');
+//$from    = $MESSAGE_HEADERS->get('from');
+//$to    = $MESSAGE_HEADERS->get('to');
+//$cc    = $MESSAGE_HEADERS->get('cc');
+//$replyto    = $MESSAGE_HEADERS->get('replyto');
+//$in_reply_to    = $MESSAGE_HEADERS->get('in_reply_to');
+//$date    = $MESSAGE_HEADERS->get('date');
+//$references    = $MESSAGE_HEADERS->get('references');
+//$priority    = $MESSAGE_HEADERS->get('priority');
+//$mdn_to    = $MESSAGE_HEADERS->get('mdn_to');
+//$flags    = $MESSAGE_HEADERS->get('flags');
+                
+                //$stop1=1;
             }
             // Запишем в масив тело письма: 'body' и 'body_html' версии.
             $msgs[$key] = array(
                 'body'     =>$body,
-                'body_html'=>$body_html
+                'body_html'=>$body_html,
+                'subject'     => $MESSAGE_HEADERS->get('subject'),
+                'from'    => $MESSAGE_HEADERS->get('from'),
+                'to'    => $MESSAGE_HEADERS->get('to'),
+                'cc'    => $MESSAGE_HEADERS->get('cc'),
+                'replyto'    => $MESSAGE_HEADERS->get('replyto'),
+                'in_reply_to'    => $MESSAGE_HEADERS->get('in_reply_to'),
+                'date'    => $MESSAGE_HEADERS->get('date'),
+                'references'    => $MESSAGE_HEADERS->get('references'),
+                'priority'    => $MESSAGE_HEADERS->get('priority'),
+                'mdn_to'    => $MESSAGE_HEADERS->get('mdn_to'),
+                'flags'    => $MESSAGE_HEADERS->get('flags')
             );
             // Удалим переменные 'body' и 'body_html'
             unset($body, $body_html);
@@ -336,7 +367,7 @@ class rm_duplicate_messages extends rcube_plugin
         }
         // Удалим наши вспомогательные переменные и масивы.
         unset($msg_uid, $apart, $attach_prop, $key, $part, $attachment_result, $result_mr);
-        $stop      = 1;
+        $stop2      = 1;
         // /**
         // * Получение заголовков сообщений и структуры тела с сервера и построение структуры объекта,
         // * подобной той, которая создается PEAR::Mail_mimeDecode.
@@ -490,6 +521,17 @@ class rm_duplicate_messages extends rcube_plugin
     //        $this->rc->output->send();
     // Далее следует обработка писем
 
+//    protected function time_work_script(){
+//        // Расчёт времени выполнения скрипта
+//        $start = microtime(true);
+//        $array = array();
+//        $i      = $j      = 0;
+//
+//        $finish = microtime(true);
+//        $delta = $finish - $start;
+//        $result= $content . 'Время выполнения скрипта: ' . $delta . ' сек.';
+//        unset($content, $delta);
+//    }
 
     // Объявление защищённого метода - 'protected function'.
     // К protected (защищенным) свойствам и методам можно получить доступ либо из содержащего их
