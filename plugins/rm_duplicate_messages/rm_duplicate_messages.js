@@ -49,7 +49,10 @@ function msg_save_prefs() {
         $(this).remove();
         // Включаем блокировку интерфейса: выводим сообщение о работе процедуры.
         // Параметр 'lock' для того чтобы это сообщение перекрывалось следующим сообщением
-        // о выполняемых процедурах. Во втором параметре - получаем локализованную метку.
+        // о выполняемых процедурах.
+        // Синтаксис: rcmail.set_busy(true, 'plugin_name.label').
+        //   Первый параметр - 'true' означает показывать сообщение или нет,
+        //   второй параметр - 'plugin_name.label' получает локализованную метку из массива языковых настроек.
         var lock = rcmail.set_busy(true, 'rm_duplicate_messages.lbl25');
         // В условии проверим - сколько 'uids' нужно отправить в запросе: все или только выделенные.
         if (msg_sum=='mssg_all') {
@@ -85,9 +88,8 @@ function msg_save_prefs() {
                     _plg_process_mode: plg_process_mode
                 }
             ), lock);
-
         // Отключим нашу коммандную кнопку
-        //window.rcmail.enable_command('plugin.btn_cmd_rm_dublecates', false);
+        window.rcmail.enable_command('plugin.btn_cmd_rm_dublecates', false);
     };
     // Кнопка 'Сбросить настройки'
     buttons[rcmail.get_label('rm_duplicate_messages.lbl6')] = function(e) {
@@ -95,7 +97,10 @@ function msg_save_prefs() {
         $(this).remove();
         // Включаем блокировку интерфейса: выводим сообщение о работе процедуры.
         // Параметр 'lock' для того чтобы это сообщение перекрывалось следующим сообщением
-        // о выполняемых процедурах. Во втором параметре - получаем локализованную метку.
+        // о выполняемых процедурах.
+        // Синтаксис: rcmail.set_busy(true, 'plugin_name.label').
+        //   Первый параметр - 'true' означает показывать сообщение или нет,
+        //   второй параметр - 'plugin_name.label' получает локализованную метку из массива языковых настроек.
         var lock = rcmail.set_busy(true, 'rm_duplicate_messages.lbl27');
         // Посылаем на сервер команду стереть данные пользовательских настроек текущего пользователя
         // в хранилище.
@@ -134,7 +139,10 @@ function innerdiv(){
 function msg_request(){
     // Включаем блокировку интерфейса: выводим сообщение о работе процедуры.
     // Параметр 'lock' для того чтобы это сообщение перекрывалось следующим сообщением
-    // о выполняемых процедурах. Во втором параметре - получаем локализованную метку.
+    // о выполняемых процедурах.
+    // Синтаксис: rcmail.set_busy(true, 'plugin_name.label').
+    //   Первый параметр - 'true' означает показывать сообщение или нет,
+    //   второй параметр - 'plugin_name.label' получает локализованную метку из массива языковых настроек.
     var lock = rcmail.set_busy(true, 'rm_duplicate_messages.lbl29');
     // Передаём запрос на сервер с указанием выполнить функцию сохранения настроек обработки писем - 'msg_save_prefs':
     // вызываем метод 'http_post' объекта 'rcmail' (параметры через запятую),
@@ -152,8 +160,11 @@ function msg_request(){
                 //_plg_process_mode: plg_process_mode
             }
         ), lock);
-var a=1;
 }
+////
+//function restart_msg_request(){
+//
+//}
 // Инициализируем объект 'rcmail: rcube_webmail'. ($(document) взято из jQuery.)
 $(document).ready(function() {
         // Если инициализирован объект 'window.rcmail' выполняем операторы в условии.
@@ -169,7 +180,8 @@ $(document).ready(function() {
             * когда будет происходить указанное событие. Общими целями являются Element, Document, и Window,
             * но целью может быть любой объект, поддерживающий события (например XMLHttpRequest или объект формы).
             *      addEventListener() работает путем добавления функции или объекта, реализующего EventListener
-            * в список прослушивателей событий для указанного типа события на том EventTarget, на котором оно вызывается.
+            * в список прослушивателей событий для указанного типа события на том EventTarget,
+            * на котором оно вызывается.
             * https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
             * Параметр 'init' - событие, параметр 'function(evt)' это - ананимная callback-функция.
             */
@@ -198,6 +210,13 @@ $(document).ready(function() {
                             }
                         );
                     }
+                    // В условии проверяем: есть-ли наши параметры настроек в хранилище 'prefs'.
+                    if (rcmail.env.rm_duplicate_messages_uids) {
+                        // Если настройки есть - запускаем функцию поиска дубликатов писем.
+                        // Передаём запрос на сервер с указанием выполнить функцию обработки писем - 'msg_request':
+                        // вызываем метод 'http_post' объекта 'rcmail' без параметров.
+                        rcmail.http_post('plugin.msg_request');
+                    }
                 }
             );
             // Прослушиватель события работы функции 'msg_save_prefs' о завершении сохранения настроек:
@@ -215,7 +234,7 @@ $(document).ready(function() {
                     msg_request();
                 }
             );
-            // Функция - прослушиватель события работы функции 'msg_save_prefs' об удалении ранее сохранённых
+            // Функция-прослушиватель события работы функции 'msg_save_prefs' об удалении ранее сохранённых
             // пользовательских настроек поиска писем в массиве 'prefs'.
             // Функция 'msg_save_prefs' отправляет ($this->rc->output->command('plugin.confirm_msg_save_prefs_remove'))
             // и $this->rc->output->send() - команду запуска функции 'confirm_msg_save_prefs_remove' в браузере.
@@ -228,22 +247,57 @@ $(document).ready(function() {
                     rcmail.display_message(msg, 'confirmation');
                 }
             );
-
-            // функция уведомления об окончании проверки на дубликаты и включения кнопки
+            // Функция-прослушиватель события работы функции 'msg_request' о поиске и обработке дубликатов
+            // сообщений. Функция 'msg_request' отправляет ($this->rc->output->command('plugin.restart_msg_request'))
+            // и $this->rc->output->send() - команду запуска функции 'restart_msg_request' в браузере.
+            rcmail.addEventListener('plugin.restart_msg_request', function (evt) {
+                    // Включаем блокировку интерфейса: выводим сообщение о работе процедуры.
+                    // Параметр 'lock' для того чтобы это сообщение перекрывалось следующим сообщением
+                    // о выполняемых процедурах.
+                    // Синтаксис: rcmail.set_busy(true, 'plugin_name.label').
+                    //   Первый параметр - 'true' означает показывать сообщение или нет,
+                    //   второй параметр - 'plugin_name.label' получает локализованную метку из массива языковых настроек.
+                    //var lock = rcmail.set_busy(true, 'rm_duplicate_messages.lbl29');
+                    // Передаём запрос на сервер с указанием выполнить функцию обработки писем - 'msg_request':
+                    // вызываем метод 'http_post' объекта 'rcmail' без параметров.
+                    rcmail.http_post('plugin.msg_request');
+                }
+            );
+            // Функция уведомления об окончании проверки на дубликаты и включения командной кнопки.
             rcmail.addEventListener('plugin.successful', function () {
-                    // включим нашу коммандную кнопку
-                    window.rcmail.enable_command('plugin.btn_cmd_toolbar', true);
                     // получим значение переменной от сервера
                     // поместим в переменную msg_marked колличество отмеченных сообщений
-                    var msg_marked = rcmail.env.msg_marked,
-                    // получим локализованные метки
-                    msg_successful = rcmail.get_lbl('rm_duplicate_messages.successful'),
-                    // в переменную msg поместим полное сообщение которое нужно вывести
-                    msg = msg_successful + msg_marked;
-                    // выводим уведомление о завершении работы нашей функции - msg_request обработки сообщений
-                    // в первом параметре получаем локализованную метку, во втором указываем тип выводимого сообщения
+                    //var msg_marked = rcmail.env.msg_marked,
+                    // Получим локализованные метки.
+                    msg_successful = rcmail.get_label('rm_duplicate_messages.successful'),
+                    // В переменную msg поместим полное сообщение которое нужно вывести.
+                    msg = msg_successful;// + msg_marked;
+                    // Выводим уведомление о завершении работы нашей функции - msg_request обработки сообщений.
+                    // В первом параметре получаем локализованную метку, во втором указываем тип выводимого сообщения
                     rcmail.display_message(msg, 'confirmation');
-                    // обновим вид списка писем
+                    // Включим нашу коммандную кнопку.
+                    window.rcmail.enable_command('plugin.btn_cmd_toolbar', true);
+                    // Включаем блокировку интерфейса: выводим сообщение о работе процедуры.
+                    // Параметр 'lock' для того чтобы это сообщение перекрывалось следующим сообщением
+                    // о выполняемых процедурах.
+                    // Синтаксис: rcmail.set_busy(true, 'plugin_name.label').
+                    //   Первый параметр - 'true' означает показывать сообщение или нет,
+                    //   второй параметр - 'plugin_name.label' получает локализованную метку из массива языковых настроек.
+                    var lock = rcmail.set_busy(true, 'rm_duplicate_messages.lbl27');
+                    // Посылаем на сервер команду стереть данные пользовательских настроек текущего пользователя
+                    // в хранилище.
+                    // Передаём запрос на сервер с указанием выполнить функцию сохранения настроек обработки писем - 'msg_save_prefs':
+                    // вызываем метод 'http_post' объекта 'rcmail' (параметры через запятую),
+                    // метод 'selection_post_data()' отправляет данные на сервер в массив [_POST] -
+                    // там содержатся передаваемые параметры из браузера.
+                    rcmail.http_post('plugin.msg_save_prefs', rcmail.selection_post_data(
+                            {
+                                // Передаём параметр указывающий функции 'msg_save_prefs' удалить настройки
+                                // поиска и обработки писем - в массиве пользовательских настроек 'prefs'.
+                                _user_prefs_null: 'user_prefs_null'
+                            }
+                        ), lock);
+                    // Обновим вид списка писем.
                     rcmail.refresh_list();
                 }
             );
