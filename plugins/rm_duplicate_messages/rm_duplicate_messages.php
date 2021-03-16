@@ -202,7 +202,7 @@ class rm_duplicate_messages extends rcube_plugin
                 'btn_cmd_toolbar'=>FALSE,
                 // Два счётчика смещения по массиву: в виде массива для обработки в цикле.
                 'msg_offset'=>array(
-                // Первое письмо от конца списка писем.
+                    // Первое письмо от конца списка писем.
                     'msg1'=>0,
                     // Следующее письмо от конца списка писем.
                     'msg2'=>1
@@ -242,6 +242,8 @@ class rm_duplicate_messages extends rcube_plugin
     // выполняет установленные процедуры с найденным дубликатом.
     function msg_request()
     {
+        // Добавим нашу локализованную надпись в сообщение.
+        $this->add_texts('localization', array('lbl30'));
         // Получаем пользовательские настройки текущего пользователя из хранилища (массив 'prefs'),
         // наши ранее сохранённые данные.
         $cfg_rm_duplicate = $this->rc->config->get('rm_duplicate_messages');
@@ -407,14 +409,13 @@ class rm_duplicate_messages extends rcube_plugin
                 // Присвоим переменной 'msg2' значение переменной 'msg1' увеличинное на единицу.
                 $msg2 = $msg1 + 1;
             }
-            //        }else {//            // Увеличим счётчики первого и второго сообщений.//            $msg1 =&$cfg_rm_duplicate['msg_offset']['msg1'];//            $msg1++;//            $msg2 =&$cfg_rm_duplicate['msg_offset']['msg2'];//            $msg2 = $msg1 + 1;
         }
         // Если '$msg1' равно 'sum_uids' уменьшенную на единицу, значит все uids из переданного списка обработаны и нужно завершить обработку писем
         // В этом случае команду 'restart_msg_request' не посылаем.
         if ($msg1 >= $sum_uids - 1) {
             // Удалим ранее созданные наши записи (настройки поиска и обработки писем)
             // - в массиве пользовательских настроек 'prefs'.
-            $user_prefs['rm_duplicate_messages'] = NULL;
+            //$user_prefs['rm_duplicate_messages'] = NULL;
             // Вызов функции корая выполняется на стороне клиента.
             $this->rc->output->command('plugin.successful');
         }else {
@@ -423,6 +424,18 @@ class rm_duplicate_messages extends rcube_plugin
             $user_prefs['rm_duplicate_messages'] = $cfg_rm_duplicate;
             // Вызов функции корая выполняется на стороне клиента.
             $this->rc->output->command('plugin.restart_msg_request');
+            /**
+            * Вызов команды display_message
+            *     show_message(string $message, string $type = 'notice', array $vars = null, boolean $override = true, int $timeout)
+            * Аргументы
+            * @param string $message     Сообщение для отображения
+            * @param string $type        Тип сообщения [notice|confirm|confirmation|error] (уведомление, подтвердить, подтверждение, ошибка)
+            * @param array $vars         Пары "ключ-значение" должны быть заменены в локализованном тексте
+            * @param boolean $override   Отменить последнее установленное сообщение
+            * @param int $timeout        Время отображения сообщения в секундах
+            */
+            // Выводим сообщение о работе функции 'msg_request'.
+            $this->rc->output->show_message($this->gettext('lbl30'), 'notice', $vars = NULL, $override = TRUE);
         }
         // Создадим объект 'rc_user' как экземпляр класса 'rcube_user',
         // и передадим ему идентификатор текущего пользователя - $this->rc->user->ID.
