@@ -15,6 +15,16 @@ class rm_duplicate_messages extends rcube_plugin
         // Переменная $this относится к текущему классу и представляет собой неявный объект.
         // rc - свойство этого объекта. Запишем туда системные настройки приложения.
         $this->rc = rcmail::get_instance();
+        // Получаем пользовательские настройки текущего пользователя из хранилища (массив 'prefs'),
+        // наши ранее сохранённые данные.
+        $cfg_rm_duplicate = $this->rc->config->get('rm_duplicate_messages');
+        /**
+        * Установим переменную среды пользователя (в браузере)
+        * @param string $name   Имя свойства
+        * @param mixed $value   Значение свойства
+        */
+        // передадим значение переменной в клиентскую среду (браузер)
+        $this->rc->output->set_env('rm_duplicate_messages_uids', $cfg_rm_duplicate['uids']);
         // Если задача 'mail' и действие '' или 'list', покажем нашу кнопку на панели, в других случаях не показываем.
         if ($this->rc->task == 'mail' && ($this->rc->action == '' || $this->rc->action == 'list')) {
             /**
@@ -390,6 +400,8 @@ class rm_duplicate_messages extends rcube_plugin
         }
         // Удалим наши вспомогательные переменные и масивы.
         unset($msg_uid, $apart, $attach_prop, $part, $att_result, $att_tmp);
+                // В условии сравниваем заголовки и вложение двух писем.
+        $a=1;
         // Если текущее сообщение это 'msg2' то увеличим счётчик'msg2',
         // иначе увеличим счётчики первого и второго сообщений.
         if ($key == "msg2") {
@@ -450,11 +462,7 @@ class rm_duplicate_messages extends rcube_plugin
 
 
 
-    ///**
-    //* Установить переменную среды * @param string $name Имя свойства * @param mixed $value Значение свойства
-    //*/
-    //// передадим значение переменной в клиентскую среду (браузер)
-    ////$this->rc->output->set_env('msgs_json', $msgs_json);
+
     //
     //// очстим оставшееся переменные сообщения от последней интерации цикла
     ////unset($msg_marked, $folder);
