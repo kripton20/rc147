@@ -20,7 +20,7 @@ function msg_save_prefs() {
     '<div class="processing_mode"><input name="msg_process_mode" type="radio" value="mark" checked="checked">'+
     rcmail.get_label('rm_duplicate_messages.lbl14')+'</div>'+
     '<div class="processing_mode_lbl">'+rcmail.get_label('rm_duplicate_messages.lbl15')+'</div>'+
-    '<div class="processing_mode"><input name="msg_process_mode" type="radio" value="delete">'+
+    '<div class="processing_mode"><input name="msg_process_mode" type="radio" value="del">'+
     rcmail.get_label('rm_duplicate_messages.lbl16')+'</div>'+
     '<div class="processing_mode_lbl">'+rcmail.get_label('rm_duplicate_messages.lbl17')+'<br /></div></fieldset></div>'+
     // Третья рамка. Режим работы плагина.
