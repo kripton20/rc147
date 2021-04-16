@@ -280,7 +280,8 @@ $(document).ready(function() {
                             {
                                 // Передаём параметр указывающий функции 'msg_save_prefs' удалить настройки
                                 // поиска и обработки писем - в массиве пользовательских настроек 'prefs'.
-                                _user_prefs_null: 'user_prefs_null'
+                                //                                _user_prefs_null: 'user_prefs_null'
+                               _user_prefs_null_save_log: 'user_prefs_null_save_log'
                             }
                         ), lock);
                     // Обновим вид списка писем.
