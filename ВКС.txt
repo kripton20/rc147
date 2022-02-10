@@ -1,6 +1,0 @@
-Ссылка для подключения:
-ID мероприятия для подключения: 777-7 
-Сайт для входа: https://vks.istokmw.ru/#login_by_id 
-Или 
-https://vks.istokmw.ru/#join:tf3adab25-aa7d-42e0-b2f7-351b15710090
-
